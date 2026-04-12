@@ -33,4 +33,8 @@ class User extends Authenticatable
 {
     return $this->belongsToMany(Course::class, 'course_user');
 }
+public function studentAnswers()
+{
+    return $this->hasMany(\App\Models\StudentAnswer::class);
+}
 }
