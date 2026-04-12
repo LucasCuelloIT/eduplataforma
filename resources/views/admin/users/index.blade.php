@@ -11,7 +11,9 @@
                     ✅ {{ session('success') }}
                 </div>
             @endif
-
+<div style="margin-bottom: 16px;">
+    <a href="{{ route('admin.dashboard') }}" style="color: #2563eb; font-weight: 600; text-decoration: none;">← Volver al Dashboard</a>
+</div>
             <div style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px;">
                 @foreach($users as $user)
                     <div style="display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #f1f5f9; padding: 16px 0;">
@@ -52,7 +54,10 @@
 
                         <!-- Acciones -->
                         <div style="display: flex; gap: 8px;">
-                            @if($user->estado == 'pendiente')
+    <a href="{{ route('admin.users.edit', $user) }}" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
+        ✏️ Editar
+    </a>
+    @if($user->estado == 'pendiente')
                                 <form action="{{ route('admin.users.aprobar', $user) }}" method="POST">
                                     @csrf
                                     @method('PATCH')

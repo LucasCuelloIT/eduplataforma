@@ -28,6 +28,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/courses/assign', [\App\Http\Controllers\Admin\CourseAssignController::class, 'index'])->name('courses.assign');
     Route::post('/courses/assign', [\App\Http\Controllers\Admin\CourseAssignController::class, 'store'])->name('courses.assign.store');
     Route::delete('/courses/assign', [\App\Http\Controllers\Admin\CourseAssignController::class, 'destroy'])->name('courses.assign.destroy');
+    Route::get('/users/{user}/edit', [\App\Http\Controllers\Admin\UserEditController::class, 'edit'])->name('users.edit');
+Route::patch('/users/{user}/update', [\App\Http\Controllers\Admin\UserEditController::class, 'update'])->name('users.update');
 });
 
 Route::middleware(['auth', 'verified', 'role:docente'])->prefix('docente')->name('docente.')->group(function () {
