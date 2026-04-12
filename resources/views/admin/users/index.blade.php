@@ -1,74 +1,76 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Gestión de Usuarios
-        </h2>
+        <h2>👥 Gestión de Usuarios</h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div style="padding: 24px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
 
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('success') }}
+                <div style="background: #dcfce7; border: 1px solid #86efac; color: #15803d; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 600;">
+                    ✅ {{ session('success') }}
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">Nombre</th>
-                                <th class="py-2">Email</th>
-                                <th class="py-2">Rol</th>
-                                <th class="py-2">Estado</th>
-                                <th class="py-2">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($users as $user)
-                            <tr class="border-b">
-                                <td class="py-2">{{ $user->name }}</td>
-                                <td class="py-2">{{ $user->email }}</td>
-                                <td class="py-2">
-                                    <form action="{{ route('admin.users.cambiarRol', $user) }}" method="POST" class="flex gap-2">
-                                        @csrf
-                                        @method('PATCH')
-                                        <select name="role" class="border rounded px-2 py-1 text-sm">
-                                            <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                                            <option value="docente" {{ $user->role == 'docente' ? 'selected' : '' }}>Docente</option>
-                                            <option value="alumno" {{ $user->role == 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                        </select>
-                                        <button type="submit" class="bg-blue-500 text-white px-2 py-1 rounded text-sm">Guardar</button>
-                                    </form>
-                                </td>
-                                <td class="py-2">
-                                    @if($user->estado == 'pendiente')
-                                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">Pendiente</span>
-                                    @else
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Aprobado</span>
-                                    @endif
-                                </td>
-                                <td class="py-2 flex gap-2">
-                                    @if($user->estado == 'pendiente')
-                                        <form action="{{ route('admin.users.aprobar', $user) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="bg-green-500 text-white px-2 py-1 rounded text-sm">Aprobar</button>
-                                        </form>
-                                    @endif
-                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('¿Seguro que querés eliminar este usuario?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-sm">Eliminar</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+            <div style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px;">
+                @foreach($users as $user)
+                    <div style="display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #f1f5f9; padding: 16px 0;">
+                        
+                        <!-- Avatar -->
+                        <div style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0;">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
+
+                        <!-- Info -->
+                        <div style="flex: 1;">
+                            <p style="font-weight: 700; color: #1e293b;">{{ $user->name }}</p>
+                            <p style="color: #6b7280; font-size: 0.85rem;">{{ $user->email }}</p>
+                        </div>
+
+                        <!-- Estado -->
+                        <div>
+                            @if($user->estado == 'pendiente')
+                                <span style="background: #fef9c3; color: #a16207; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">⏳ Pendiente</span>
+                            @else
+                                <span style="background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">✅ Aprobado</span>
+                            @endif
+                        </div>
+
+                        <!-- Rol -->
+                        <form action="{{ route('admin.users.cambiarRol', $user) }}" method="POST" style="display: flex; gap: 8px; align-items: center;">
+                            @csrf
+                            @method('PATCH')
+                            <select name="role" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; font-size: 0.85rem; color: #1e293b;">
+                                <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>🛠️ Admin</option>
+                                <option value="docente" {{ $user->role == 'docente' ? 'selected' : '' }}>👨‍🏫 Docente</option>
+                                <option value="alumno" {{ $user->role == 'alumno' ? 'selected' : '' }}>🎓 Alumno</option>
+                            </select>
+                            <button type="submit" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
+                                Guardar
+                            </button>
+                        </form>
+
+                        <!-- Acciones -->
+                        <div style="display: flex; gap: 8px;">
+                            @if($user->estado == 'pendiente')
+                                <form action="{{ route('admin.users.aprobar', $user) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
+                                        ✅ Aprobar
+                                    </button>
+                                </form>
+                            @endif
+                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('¿Seguro que querés eliminar este usuario?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>

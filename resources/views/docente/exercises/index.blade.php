@@ -1,69 +1,61 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Ejercicios de: {{ $lesson->titulo }}
-        </h2>
+        <h2>❓ Ejercicios de: {{ $lesson->titulo }}</h2>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 4px;">{{ $course->titulo }}</p>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div style="padding: 24px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
 
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('success') }}
+                <div style="background: #dcfce7; border: 1px solid #86efac; color: #15803d; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 600;">
+                    ✅ {{ session('success') }}
                 </div>
             @endif
 
-            <div class="mb-4 flex gap-2">
-                <a href="{{ route('docente.courses.lessons.exercises.create', [$course, $lesson]) }}" class="bg-blue-500 text-white px-4 py-2 rounded">
+            <div style="margin-bottom: 16px;">
+                <a href="{{ route('docente.courses.lessons.index', $course) }}" style="color: #2563eb; font-weight: 600; text-decoration: none;">← Volver a Lecciones</a>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <a href="{{ route('docente.courses.lessons.exercises.create', [$course, $lesson]) }}" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 700;">
                     + Nuevo Ejercicio
-                </a>
-                <a href="{{ route('docente.courses.lessons.index', $course) }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">
-                    Volver a Lecciones
                 </a>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    @if($exercises->isEmpty())
-                        <p class="text-gray-500">Esta lección no tiene ejercicios todavía.</p>
-                    @else
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="py-2">Orden</th>
-                                    <th class="py-2">Pregunta</th>
-                                    <th class="py-2">Tipo</th>
-                                    <th class="py-2">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($exercises as $exercise)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $exercise->orden }}</td>
-                                    <td class="py-2">{{ $exercise->pregunta }}</td>
-                                    <td class="py-2">
+            <div style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px;">
+                @if($exercises->isEmpty())
+                    <p style="color: #9ca3af;">Esta lección no tiene ejercicios todavía.</p>
+                @else
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        @foreach($exercises as $exercise)
+                            <div style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                                <div style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;">
+                                    {{ $exercise->orden }}
+                                </div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 700; color: #1e293b; margin-bottom: 4px;">{{ $exercise->pregunta }}</p>
+                                    <div>
                                         @if($exercise->tipo == 'multiple_choice')
-                                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Múltiple choice</span>
+                                            <span style="background: #dbeafe; color: #1d4ed8; padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">Múltiple Choice</span>
                                         @elseif($exercise->tipo == 'verdadero_falso')
-                                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">Verdadero/Falso</span>
+                                            <span style="background: #f3e8ff; color: #7e22ce; padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">Verdadero/Falso</span>
                                         @else
-                                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">Completar</span>
+                                            <span style="background: #fef9c3; color: #a16207; padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">Completar</span>
                                         @endif
-                                    </td>
-                                    <td class="py-2">
-                                        <form action="{{ route('docente.courses.lessons.exercises.destroy', [$course, $lesson, $exercise]) }}" method="POST" onsubmit="return confirm('¿Seguro que querés eliminar este ejercicio?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-sm">Eliminar</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
+                                    </div>
+                                </div>
+                                <form action="{{ route('docente.courses.lessons.exercises.destroy', [$course, $lesson, $exercise]) }}" method="POST" onsubmit="return confirm('¿Seguro?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
+                                        🗑️ Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
     </div>

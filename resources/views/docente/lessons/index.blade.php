@@ -1,68 +1,65 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Lecciones de: {{ $course->titulo }}
-        </h2>
+        <h2>📝 Lecciones de: {{ $course->titulo }}</h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div style="padding: 24px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
 
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('success') }}
+                <div style="background: #dcfce7; border: 1px solid #86efac; color: #15803d; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 600;">
+                    ✅ {{ session('success') }}
                 </div>
             @endif
 
-            <div class="mb-4 flex gap-2">
-                <a href="{{ route('docente.courses.lessons.create', $course) }}" class="bg-blue-500 text-white px-4 py-2 rounded">
+            <div style="margin-bottom: 16px;">
+                <a href="{{ route('docente.courses.index') }}" style="color: #2563eb; font-weight: 600; text-decoration: none;">← Volver a Cursos</a>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <a href="{{ route('docente.courses.lessons.create', $course) }}" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 700;">
                     + Nueva Lección
-                </a>
-                <a href="{{ route('docente.courses.index') }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">
-                    Volver a Cursos
                 </a>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    @if($lessons->isEmpty())
-                        <p class="text-gray-500">Este curso no tiene lecciones todavía.</p>
-                    @else
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="py-2">Orden</th>
-                                    <th class="py-2">Título</th>
-                                    <th class="py-2">Video</th>
-                                    <th class="py-2">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($lessons as $lesson)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $lesson->orden }}</td>
-                                    <td class="py-2">{{ $lesson->titulo }}</td>
-                                    <td class="py-2">
+            <div style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px;">
+                @if($lessons->isEmpty())
+                    <p style="color: #9ca3af;">Este curso no tiene lecciones todavía.</p>
+                @else
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        @foreach($lessons as $lesson)
+                            <div style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                                <div style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;">
+                                    {{ $lesson->orden }}
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="font-weight: 700; color: #1e293b; margin-bottom: 4px;">{{ $lesson->titulo }}</h4>
+                                    <div style="display: flex; gap: 8px;">
                                         @if($lesson->video_url)
-                                            <a href="{{ $lesson->video_url }}" target="_blank" class="text-blue-500 text-sm">Ver video</a>
-                                        @else
-                                            <span class="text-gray-400 text-sm">Sin video</span>
+                                            <span style="color: #6b7280; font-size: 0.8rem;">▶ Video</span>
                                         @endif
-                                    </td>
-                                    <td class="py-2 flex gap-2">
-                                        <a href="{{ route('docente.courses.lessons.edit', [$course, $lesson]) }}" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Editar</a>
-                                        <form action="{{ route('docente.courses.lessons.destroy', [$course, $lesson]) }}" method="POST" onsubmit="return confirm('¿Seguro que querés eliminar esta lección?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-sm">Eliminar</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
+                                        <span style="color: #6b7280; font-size: 0.8rem;">❓ {{ $lesson->exercises->count() }} ejercicios</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{{ route('docente.courses.lessons.exercises.index', [$course, $lesson]) }}" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                                        ❓ Ejercicios
+                                    </a>
+                                    <a href="{{ route('docente.courses.lessons.edit', [$course, $lesson]) }}" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                                        ✏️ Editar
+                                    </a>
+                                    <form action="{{ route('docente.courses.lessons.destroy', [$course, $lesson]) }}" method="POST" onsubmit="return confirm('¿Seguro?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
     </div>
