@@ -47,6 +47,8 @@ Route::middleware(['auth', 'verified', 'role:alumno'])->prefix('alumno')->name('
     Route::get('/courses/{course}', [\App\Http\Controllers\Alumno\CourseController::class, 'show'])->name('courses.show');
     Route::get('/courses/{course}/lessons/{lesson}', [\App\Http\Controllers\Alumno\CourseController::class, 'lesson'])->name('courses.lesson');
     Route::post('/courses/{course}/lessons/{lesson}/responder', [\App\Http\Controllers\Alumno\CourseController::class, 'responder'])->name('courses.responder');
+    Route::get('/courses/{course}/lessons/{lesson}/minigame', [\App\Http\Controllers\Alumno\MinigameController::class, 'show'])->name('courses.minigame');
+Route::post('/courses/{course}/lessons/{lesson}/minigame', [\App\Http\Controllers\Alumno\MinigameController::class, 'store'])->name('courses.minigame.store');
 });
 
 Route::middleware('auth')->group(function () {

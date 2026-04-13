@@ -123,8 +123,14 @@
                         @endforeach
 
                         <button type="submit" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 14px 32px; border-radius: 12px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; width: 100%;">
-                            📨 Enviar respuestas
-                        </button>
+    📨 Enviar respuestas
+</button>
+
+@if($answers->isNotEmpty() && $nota >= 7)
+    <a href="{{ route('alumno.courses.minigame', [$course, $lesson]) }}" style="display: block; margin-top: 12px; background: linear-gradient(135deg, #f59e0b, #f97316); color: white; padding: 14px 32px; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-align: center; text-decoration: none;">
+        🎮 ¡Desbloquear Minijuego!
+    </a>
+@endif
                     </form>
                 </div>
             @endif
