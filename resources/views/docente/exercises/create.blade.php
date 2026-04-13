@@ -45,19 +45,19 @@
                         </div>
 
                         <!-- Verdadero/Falso -->
-                        <div id="opciones_vf" class="hidden mb-4">
-                            <label class="block text-gray-700 mb-2">¿Cuál es la respuesta correcta?</label>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2">
-                                    <input type="radio" name="correcta" value="0"> Verdadero
-                                </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="radio" name="correcta" value="1"> Falso
-                                </label>
-                            </div>
-                            <input type="hidden" name="opciones[]" value="Verdadero">
-                            <input type="hidden" name="opciones[]" value="Falso">
-                        </div>
+                        <div id="opciones_vf" style="display:none; margin-bottom: 20px;">
+    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 12px;">¿Cuál es la respuesta correcta?</label>
+    <div style="display: flex; gap: 16px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f0fdf4; border: 2px solid #86efac; padding: 10px 20px; border-radius: 10px;">
+            <input type="radio" name="correcta" value="0"> ✅ Verdadero
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #fef2f2; border: 2px solid #fca5a5; padding: 10px 20px; border-radius: 10px;">
+            <input type="radio" name="correcta" value="1"> ❌ Falso
+        </label>
+    </div>
+    <input type="hidden" name="opciones[0]" value="Verdadero">
+    <input type="hidden" name="opciones[1]" value="Falso">
+</div>  
 
                         <!-- Completar -->
                         <div id="opciones_completar" class="hidden mb-4">
@@ -77,21 +77,21 @@
 
     <script>
         function mostrarOpciones() {
-            const tipo = document.getElementById('tipo').value;
-            document.getElementById('opciones_multiple').classList.add('hidden');
-            document.getElementById('opciones_vf').classList.add('hidden');
-            document.getElementById('opciones_completar').classList.add('hidden');
+    const tipo = document.getElementById('tipo').value;
+    document.getElementById('opciones_multiple').style.display = 'none';
+    document.getElementById('opciones_vf').style.display = 'none';
+    document.getElementById('opciones_completar').style.display = 'none';
 
-            if (tipo === 'multiple_choice') {
-                document.getElementById('opciones_multiple').classList.remove('hidden');
-            } else if (tipo === 'verdadero_falso') {
-                document.getElementById('opciones_vf').classList.remove('hidden');
-            } else if (tipo === 'completar') {
-                document.getElementById('opciones_completar').classList.remove('hidden');
-            }
-        }
+    if (tipo === 'multiple_choice') {
+        document.getElementById('opciones_multiple').style.display = 'block';
+    } else if (tipo === 'verdadero_falso') {
+        document.getElementById('opciones_vf').style.display = 'block';
+    } else if (tipo === 'completar') {
+        document.getElementById('opciones_completar').style.display = 'block';
+    }
+}
 
-        // Ejecutar al cargar si hay un valor seleccionado
-        window.onload = mostrarOpciones;
+window.onload = mostrarOpciones;
+
     </script>
 </x-app-layout>
