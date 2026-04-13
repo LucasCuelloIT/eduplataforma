@@ -45,7 +45,7 @@
                 <div style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 24px;">
                     <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 16px;">📖 Explicación</h3>
                     <div style="color: #4b5563; line-height: 1.8; font-size: 1rem;">
-                        {!! nl2br(e($lesson->contenido)) !!}
+                        {!! $lesson->contenido !!}
                     </div>
                 </div>
             @endif
