@@ -7,9 +7,9 @@ public function boot(): void
         URL::forceRootUrl(config('app.url'));
     }
 
-    if (env('APP_ENV') === 'production') {
-        URL::forceScheme('https');
-    }
+if (app()->environment('production')) {
+    URL::forceScheme('https');
+}
 
     // Forzar migraciones en producción
     if (app()->environment('production')) {
