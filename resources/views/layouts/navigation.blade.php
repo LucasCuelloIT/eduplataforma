@@ -18,6 +18,7 @@
                         @elseif(auth()->user()->role === 'docente')
                             <a href="{{ route('docente.dashboard') }}" style="color: white; font-weight: 600; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">🏠 Inicio</a>
                             <a href="{{ route('docente.courses.index') }}" style="color: white; font-weight: 600; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">📚 Mis Cursos</a>
+                            <a href="{{ route('docente.reports.index') }}" style="color: white; font-weight: 600; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">📊 Reportes</a>
                         @elseif(auth()->user()->role === 'alumno')
                             <a href="{{ route('alumno.dashboard') }}" style="color: white; font-weight: 600; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">🏠 Inicio</a>
                             <a href="{{ route('alumno.courses.index') }}" style="color: white; font-weight: 600; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">📚 Mis Cursos</a>

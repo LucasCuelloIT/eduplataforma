@@ -37,6 +37,8 @@ Route::middleware(['auth', 'verified', 'role:docente'])->prefix('docente')->name
     Route::resource('/courses', \App\Http\Controllers\Docente\CourseController::class);
     Route::resource('/courses.lessons', \App\Http\Controllers\Docente\LessonController::class);
     Route::resource('/courses.lessons.exercises', \App\Http\Controllers\Docente\ExerciseController::class);
+    Route::get('/reports', [\App\Http\Controllers\Docente\ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/{course}', [\App\Http\Controllers\Docente\ReportController::class, 'show'])->name('reports.show');
 });
 
 Route::middleware(['auth', 'verified', 'role:alumno'])->prefix('alumno')->name('alumno.')->group(function () {

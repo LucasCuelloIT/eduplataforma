@@ -45,13 +45,18 @@
                                         @endif
                                     </div>
                                 </div>
-                                <form action="{{ route('docente.courses.lessons.exercises.destroy', [$course, $lesson, $exercise]) }}" method="POST" onsubmit="return confirm('¿Seguro?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
-                                        🗑️ Eliminar
-                                    </button>
-                                </form>
+<div style="display: flex; gap: 8px;">
+    <a href="{{ route('docente.courses.lessons.exercises.edit', [$course, $lesson, $exercise]) }}" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; text-decoration: none;">
+        ✏️ Editar
+    </a>
+    <form action="{{ route('docente.courses.lessons.exercises.destroy', [$course, $lesson, $exercise]) }}" method="POST" onsubmit="return confirm('¿Seguro?')">
+        @csrf
+        @method('DELETE')
+        <button type="submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer;">
+            🗑️ Eliminar
+        </button>
+    </form>
+</div>
                             </div>
                         @endforeach
                     </div>
