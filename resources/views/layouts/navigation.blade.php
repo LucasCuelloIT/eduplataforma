@@ -43,7 +43,7 @@
                     <a href="{{ route('profile.edit') }}" style="display: block; padding: 12px 16px; color: #374151; text-decoration: none; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9;">
                         👤 Mi Perfil
                     </a>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ secure_url(route('logout', [], false)) }}">
                         @csrf
                         <button type="submit" style="display: block; width: 100%; text-align: left; padding: 12px 16px; color: #dc2626; font-weight: 600; font-size: 0.9rem; background: none; border: none; cursor: pointer;">
                             🚪 Cerrar Sesión
