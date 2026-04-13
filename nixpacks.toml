@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "php83", "php83Extensions.pdo", "php83Extensions.pdo_mysql", "php83Extensions.mbstring", "php83Extensions.xml", "php83Extensions.curl", "php83Extensions.zip", "php83Extensions.pdo_sqlite", "php83Extensions.sqlite3", "php83Packages.composer"]
+nixPkgs = ["nodejs_22", "php83", "php83Extensions.pdo", "php83Extensions.pdo_mysql", "php83Extensions.mbstring", "php83Extensions.xml", "php83Extensions.curl", "php83Extensions.zip", "php83Extensions.pdo_sqlite", "php83Extensions.sqlite3", "php83Packages.composer"]
 
 [phases.install]
 cmds = ["composer install --no-dev --optimize-autoloader", "npm install"]
