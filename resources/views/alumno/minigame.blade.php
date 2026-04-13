@@ -126,7 +126,7 @@
             }));
 
             // Timer
-            timer = 10;
+            timer = 15;
             document.getElementById('timer').textContent = timer;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {

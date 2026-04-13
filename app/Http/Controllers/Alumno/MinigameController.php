@@ -51,7 +51,7 @@ class MinigameController extends Controller
                 'opciones'  => $opciones->pluck('texto')->values(),
                 'correcta'  => $correcta?->texto,
             ];
-        })->take(5); // Máximo 5 preguntas por juego
+        })->shuffle()->take(10); // Hasta 10 preguntas mezcladas
 
         $score = MinigameScore::where('user_id', $alumno->id)
             ->where('lesson_id', $lesson->id)
