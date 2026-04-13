@@ -11,6 +11,16 @@
                 <div class="p-6">
                     <form action="{{ route('docente.courses.lessons.exercises.store', [$course, $lesson]) }}" method="POST">
                         @csrf
+                        @if($errors->any())
+    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;">
+        <p style="font-weight: 700; margin-bottom: 4px;">Por favor corregí estos errores:</p>
+        <ul style="margin-left: 16px;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
                         <div class="mb-4">
                             <label class="block text-gray-700 mb-1">Pregunta</label>
