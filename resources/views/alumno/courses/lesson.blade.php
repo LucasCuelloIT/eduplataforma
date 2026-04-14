@@ -152,41 +152,132 @@
                                     </div>
 
                                     @if($exercise->tipo === 'completar')
-                                        <input type="text" name="exercise_{{ $exercise->id }}"
-                                            value="{{ $answers[$exercise->id]->respuesta ?? '' }}"
-                                            style="width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 1rem; font-family: 'Nunito', sans-serif;"
-                                            placeholder="Escribí tu respuesta aquí...">
-                                        @if(isset($answers[$exercise->id]))
-                                            @if($answers[$exercise->id]->es_correcta)
-                                                <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
-                                            @else
-                                                <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
-                                            @endif
-                                        @endif
-                                    @else
-                                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                                            @foreach($exercise->options as $option)
-                                                <label style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;
-                                                    @if(isset($answers[$exercise->id]))
-                                                        @if($option->es_correcta) background: #dcfce7; border-color: #86efac;
-                                                        @elseif($answers[$exercise->id]->respuesta === $option->texto && !$option->es_correcta) background: #fee2e2; border-color: #fca5a5;
-                                                        @endif
-                                                    @endif
-                                                ">
-                                                    <input type="radio" name="exercise_{{ $exercise->id }}"
-                                                        value="{{ $option->texto }}"
-                                                        {{ isset($answers[$exercise->id]) && $answers[$exercise->id]->respuesta === $option->texto ? 'checked' : '' }}
-                                                        style="width: 18px; height: 18px; accent-color: #8b5cf6;">
-                                                    <span style="color: #1e293b; font-weight: 600; flex: 1;">{{ $option->texto }}</span>
-                                                    @if(isset($answers[$exercise->id]))
-                                                        @if($option->es_correcta) <span style="color: #16a34a; font-size: 1.1rem;">✅</span>
-                                                        @elseif($answers[$exercise->id]->respuesta === $option->texto && !$option->es_correcta) <span style="color: #dc2626; font-size: 1.1rem;">❌</span>
-                                                        @endif
-                                                    @endif
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    @endif
+    <input type="text" name="exercise_{{ $exercise->id }}"
+        value="{{ $answers[$exercise->id]->respuesta ?? '' }}"
+        style="width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 1rem; font-family: 'Nunito', sans-serif;"
+        placeholder="Escribí tu respuesta aquí...">
+    @if(isset($answers[$exercise->id]))
+        @if($answers[$exercise->id]->es_correcta)
+            <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
+        @else
+            <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
+        @endif
+    @endif
+
+@elseif($exercise->tipo === 'ordenar')
+    @php $elementos = $exercise->options->pluck('texto')->shuffle(); @endphp
+    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Arrastrá los elementos para ordenarlos correctamente.</p>
+    <div id="sortable-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+        @foreach($elementos as $elemento)
+            <div class="sortable-item" data-exercise="{{ $exercise->id }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
+                <span style="color: #9ca3af;">⠿</span> {{ $elemento }}
+            </div>
+        @endforeach
+    </div>
+    <input type="hidden" name="exercise_{{ $exercise->id }}" id="order-{{ $exercise->id }}" value="">
+    @if(isset($answers[$exercise->id]))
+        @if($answers[$exercise->id]->es_correcta)
+            <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
+        @else
+            <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
+        @endif
+    @endif
+
+@elseif($exercise->tipo === 'unir')
+    @php
+        $pares = $exercise->options->map(fn($o) => explode('|', $o->texto));
+        $izquierda = $pares->pluck(0)->shuffle();
+        $derecha = $pares->pluck(1)->shuffle();
+    @endphp
+    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Hacé clic en un elemento de la izquierda y luego en el de la derecha para unirlos.</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div id="unir-izq-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+            @foreach($izquierda as $item)
+                <div class="unir-izq" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
+                    style="background: #dbeafe; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #1d4ed8; text-align: center;">
+                    {{ $item }}
+                </div>
+            @endforeach
+        </div>
+        <div id="unir-der-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+            @foreach($derecha as $item)
+                <div class="unir-der" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
+                    style="background: #dcfce7; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #15803d; text-align: center;">
+                    {{ $item }}
+                </div>
+            @endforeach
+        </div>
+    </div>
+    <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-{{ $exercise->id }}" value="">
+    @if(isset($answers[$exercise->id]))
+        @if($answers[$exercise->id]->es_correcta)
+            <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
+        @else
+            <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
+        @endif
+    @endif
+
+@elseif($exercise->tipo === 'tabla')
+    @php
+        $tablaData = json_decode($exercise->options->first()?->texto, true);
+        $columnas = $tablaData['columnas'] ?? [];
+        $filas = $tablaData['filas'] ?? [];
+    @endphp
+    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Completá las celdas vacías de la tabla.</p>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    @foreach($columnas as $col)
+                        <th style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 10px 14px; text-align: center; font-weight: 700;">{{ $col }}</th>
+                    @endforeach
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($filas as $fi => $fila)
+                    <tr>
+                        @foreach($fila as $ci => $celda)
+                            <td style="border: 2px solid #e5e7eb; padding: 8px;">
+                                @if(empty($celda))
+                                    <input type="text" name="exercise_{{ $exercise->id }}_tabla_{{ $fi }}_{{ $ci }}"
+                                        style="width: 100%; border: none; outline: none; font-size: 0.9rem; text-align: center; font-family: 'Nunito', sans-serif;"
+                                        placeholder="...">
+                                @else
+                                    <span style="display: block; text-align: center; font-weight: 600; color: #1e293b;">{{ $celda }}</span>
+                                @endif
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+@else
+    {{-- multiple_choice y verdadero_falso --}}
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        @foreach($exercise->options as $option)
+            <label style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;
+                @if(isset($answers[$exercise->id]))
+                    @if($option->es_correcta) background: #dcfce7; border-color: #86efac;
+                    @elseif($answers[$exercise->id]->respuesta === $option->texto && !$option->es_correcta) background: #fee2e2; border-color: #fca5a5;
+                    @endif
+                @endif
+            ">
+                <input type="radio" name="exercise_{{ $exercise->id }}"
+                    value="{{ $option->texto }}"
+                    {{ isset($answers[$exercise->id]) && $answers[$exercise->id]->respuesta === $option->texto ? 'checked' : '' }}
+                    style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                <span style="color: #1e293b; font-weight: 600; flex: 1;">{{ $option->texto }}</span>
+                @if(isset($answers[$exercise->id]))
+                    @if($option->es_correcta) <span style="color: #16a34a; font-size: 1.1rem;">✅</span>
+                    @elseif($answers[$exercise->id]->respuesta === $option->texto && !$option->es_correcta) <span style="color: #dc2626; font-size: 1.1rem;">❌</span>
+                    @endif
+                @endif
+            </label>
+        @endforeach
+    </div>
+@endif
 
                                     <div style="display: flex; gap: 10px; margin-top: 16px;">
                                         @if(!$loop->first)
