@@ -71,8 +71,8 @@
                                 <input type="radio" name="correcta" value="1"> ❌ Falso
                             </label>
                         </div>
-                        <input type="hidden" name="opciones[0]" value="Verdadero">
-                        <input type="hidden" name="opciones[1]" value="Falso">
+                        <input type="hidden" name="vf_opciones[0]" value="Verdadero">
+                        <input type="hidden" name="vf_opciones[1]" value="Falso">
                     </div>
 
                     <!-- Completar -->

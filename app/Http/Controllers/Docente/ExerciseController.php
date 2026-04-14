@@ -85,16 +85,21 @@ class ExerciseController extends Controller
                 ]);
                 break;
 
-            default:
-                // multiple_choice y verdadero_falso
-                foreach ($request->opciones as $index => $opcion) {
-                    if (empty($opcion)) continue;
-                    $exercise->options()->create([
-                        'texto'       => $opcion,
-                        'es_correcta' => ($index == $request->correcta),
-                    ]);
-                }
-                break;
+            case 'verdadero_falso':
+    $exercise->options()->create(['texto' => 'Verdadero', 'es_correcta' => ($request->correcta == 0)]);
+    $exercise->options()->create(['texto' => 'Falso', 'es_correcta' => ($request->correcta == 1)]);
+    break;
+
+default:
+    // multiple_choice
+    foreach ($request->opciones as $index => $opcion) {
+        if (empty($opcion)) continue;
+        $exercise->options()->create([
+            'texto'       => $opcion,
+            'es_correcta' => ($index == $request->correcta),
+        ]);
+    }
+    break;
         }
 
         return redirect()->route('docente.courses.lessons.exercises.index', [$course, $lesson])
@@ -168,15 +173,21 @@ class ExerciseController extends Controller
                 ]);
                 break;
 
-            default:
-                foreach ($request->opciones as $index => $opcion) {
-                    if (empty($opcion)) continue;
-                    $exercise->options()->create([
-                        'texto'       => $opcion,
-                        'es_correcta' => ($index == $request->correcta),
-                    ]);
-                }
-                break;
+case 'verdadero_falso':
+    $exercise->options()->create(['texto' => 'Verdadero', 'es_correcta' => ($request->correcta == 0)]);
+    $exercise->options()->create(['texto' => 'Falso', 'es_correcta' => ($request->correcta == 1)]);
+    break;
+
+default:
+    // multiple_choice
+    foreach ($request->opciones as $index => $opcion) {
+        if (empty($opcion)) continue;
+        $exercise->options()->create([
+            'texto'       => $opcion,
+            'es_correcta' => ($index == $request->correcta),
+        ]);
+    }
+    break;
         }
 
         return redirect()->route('docente.courses.lessons.exercises.index', [$course, $lesson])
