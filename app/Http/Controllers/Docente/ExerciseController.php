@@ -22,41 +22,84 @@ class ExerciseController extends Controller
     }
 
     public function store(Request $request, Course $course, Lesson $lesson)
-{
-    $validated = $request->validate([
-        'pregunta'           => 'required|string',
-        'tipo'               => 'required|in:multiple_choice,verdadero_falso,completar',
-        'orden'              => 'nullable|integer',
-        'opciones'           => 'required_unless:tipo,completar|array',
-        'opciones.*'         => 'nullable|string',
-        'correcta'           => 'required_unless:tipo,completar',
-        'respuesta_correcta' => 'required_if:tipo,completar|nullable|string',
-    ]);
-
-    $exercise = $lesson->exercises()->create([
-        'pregunta' => $request->pregunta,
-        'tipo'     => $request->tipo,
-        'orden'    => $request->orden ?? 0,
-    ]);
-
-    if ($request->tipo === 'completar') {
-        $exercise->options()->create([
-            'texto'       => $request->respuesta_correcta,
-            'es_correcta' => true,
+    {
+        $request->validate([
+            'pregunta'           => 'required|string',
+            'tipo'               => 'required|in:multiple_choice,verdadero_falso,completar,ordenar,unir,tabla',
+            'orden'              => 'nullable|integer',
+            'opciones'           => 'nullable|array',
+            'opciones.*'         => 'nullable|string',
+            'correcta'           => 'nullable',
+            'respuesta_correcta' => 'nullable|string',
+            'pares'              => 'nullable|array',
+            'pares.*.izquierda'  => 'nullable|string',
+            'pares.*.derecha'    => 'nullable|string',
+            'columnas'           => 'nullable|array',
+            'filas'              => 'nullable|array',
         ]);
-    } else {
-        foreach ($request->opciones as $index => $opcion) {
-            if (empty($opcion)) continue;
-            $exercise->options()->create([
-                'texto'       => $opcion,
-                'es_correcta' => ($index == $request->correcta),
-            ]);
-        }
-    }
 
-    return redirect()->route('docente.courses.lessons.exercises.index', [$course, $lesson])
-        ->with('success', 'Ejercicio creado correctamente.');
-}
+        $exercise = $lesson->exercises()->create([
+            'pregunta' => $request->pregunta,
+            'tipo'     => $request->tipo,
+            'orden'    => $request->orden ?? 0,
+        ]);
+
+        switch ($request->tipo) {
+            case 'completar':
+                $exercise->options()->create([
+                    'texto' => $request->respuesta_correcta,
+                    'es_correcta' => true,
+                ]);
+                break;
+
+            case 'ordenar':
+                // Guardar los elementos en el orden correcto
+                foreach ($request->opciones as $index => $opcion) {
+                    if (empty($opcion)) continue;
+                    $exercise->options()->create([
+                        'texto' => $opcion,
+                        'es_correcta' => true, // el orden correcto es el ingresado
+                    ]);
+                }
+                break;
+
+            case 'unir':
+                // Guardar pares izquierda|derecha
+                foreach ($request->pares as $par) {
+                    if (empty($par['izquierda']) || empty($par['derecha'])) continue;
+                    $exercise->options()->create([
+                        'texto' => $par['izquierda'] . '|' . $par['derecha'],
+                        'es_correcta' => true,
+                    ]);
+                }
+                break;
+
+            case 'tabla':
+                // Guardar estructura: columnas y filas como JSON
+                $exercise->options()->create([
+                    'texto' => json_encode([
+                        'columnas' => $request->columnas ?? [],
+                        'filas'    => $request->filas ?? [],
+                    ]),
+                    'es_correcta' => true,
+                ]);
+                break;
+
+            default:
+                // multiple_choice y verdadero_falso
+                foreach ($request->opciones as $index => $opcion) {
+                    if (empty($opcion)) continue;
+                    $exercise->options()->create([
+                        'texto'       => $opcion,
+                        'es_correcta' => ($index == $request->correcta),
+                    ]);
+                }
+                break;
+        }
+
+        return redirect()->route('docente.courses.lessons.exercises.index', [$course, $lesson])
+            ->with('success', 'Ejercicio creado correctamente.');
+    }
 
     public function edit(Course $course, Lesson $lesson, Exercise $exercise)
     {
@@ -68,11 +111,16 @@ class ExerciseController extends Controller
     {
         $request->validate([
             'pregunta'           => 'required|string',
-            'orden'              => 'integer',
-            'opciones'           => 'required_unless:tipo,completar|array',
-            'opciones.*'         => 'string',
-            'correcta'           => 'required_unless:tipo,completar',
-            'respuesta_correcta' => 'required_if:tipo,completar|nullable|string',
+            'orden'              => 'nullable|integer',
+            'opciones'           => 'nullable|array',
+            'opciones.*'         => 'nullable|string',
+            'correcta'           => 'nullable',
+            'respuesta_correcta' => 'nullable|string',
+            'pares'              => 'nullable|array',
+            'pares.*.izquierda'  => 'nullable|string',
+            'pares.*.derecha'    => 'nullable|string',
+            'columnas'           => 'nullable|array',
+            'filas'              => 'nullable|array',
         ]);
 
         $exercise->update([
@@ -80,21 +128,55 @@ class ExerciseController extends Controller
             'orden'    => $request->orden ?? 0,
         ]);
 
-        // Borramos las opciones anteriores y las recreamos
         $exercise->options()->delete();
 
-        if ($exercise->tipo === 'completar') {
-            $exercise->options()->create([
-                'texto'       => $request->respuesta_correcta,
-                'es_correcta' => true,
-            ]);
-        } else {
-            foreach ($request->opciones as $index => $opcion) {
+        switch ($exercise->tipo) {
+            case 'completar':
                 $exercise->options()->create([
-                    'texto'       => $opcion,
-                    'es_correcta' => ($index == $request->correcta),
+                    'texto' => $request->respuesta_correcta,
+                    'es_correcta' => true,
                 ]);
-            }
+                break;
+
+            case 'ordenar':
+                foreach ($request->opciones as $index => $opcion) {
+                    if (empty($opcion)) continue;
+                    $exercise->options()->create([
+                        'texto' => $opcion,
+                        'es_correcta' => true,
+                    ]);
+                }
+                break;
+
+            case 'unir':
+                foreach ($request->pares as $par) {
+                    if (empty($par['izquierda']) || empty($par['derecha'])) continue;
+                    $exercise->options()->create([
+                        'texto' => $par['izquierda'] . '|' . $par['derecha'],
+                        'es_correcta' => true,
+                    ]);
+                }
+                break;
+
+            case 'tabla':
+                $exercise->options()->create([
+                    'texto' => json_encode([
+                        'columnas' => $request->columnas ?? [],
+                        'filas'    => $request->filas ?? [],
+                    ]),
+                    'es_correcta' => true,
+                ]);
+                break;
+
+            default:
+                foreach ($request->opciones as $index => $opcion) {
+                    if (empty($opcion)) continue;
+                    $exercise->options()->create([
+                        'texto'       => $opcion,
+                        'es_correcta' => ($index == $request->correcta),
+                    ]);
+                }
+                break;
         }
 
         return redirect()->route('docente.courses.lessons.exercises.index', [$course, $lesson])
