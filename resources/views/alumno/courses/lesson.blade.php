@@ -84,7 +84,18 @@
                     </div>
                 @endif
             @endif
-
+{{-- Pizarra --}}
+@if($lesson->pizarra)
+    <div style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 24px;">
+        <div style="background: linear-gradient(135deg, #f59e0b, #f97316); padding: 14px 20px; display: flex; align-items: center; gap: 8px;">
+            <span style="color: white; font-size: 1.1rem;">🎨</span>
+            <span style="color: white; font-weight: 700; font-size: 0.95rem;">Pizarra del docente</span>
+        </div>
+        <div style="padding: 16px;">
+            <img src="{{ $lesson->pizarra }}" style="width: 100%; border-radius: 10px; border: 2px solid #e5e7eb;" alt="Pizarra">
+        </div>
+    </div>
+@endif
             {{-- Ejercicios --}}
             @if($exercises->isNotEmpty())
                 <div style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden;">
