@@ -217,4 +217,138 @@
             window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
         }
     </script>
+    <!-- Botón flotante de herramientas -->
+<div id="tools-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;">
+
+    <!-- Herramientas desplegables -->
+    <div id="tools-panel" style="display: none; flex-direction: column; gap: 10px; margin-bottom: 12px;">
+
+        <!-- Calculadora -->
+        <div id="calc-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
+            <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">🧮 Calculadora</p>
+            <input id="calc-display" type="text" readonly style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 1.1rem; text-align: right; margin-bottom: 8px; font-family: monospace;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                @foreach(['7','8','9','÷','4','5','6','×','1','2','3','-','0','.','=','+'] as $btn)
+                    <button onclick="calcPress('{{ $btn }}')" style="padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+                        {{ in_array($btn, ['÷','×','-','+','=']) ? 'background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white;' : 'background: #f1f5f9; color: #1e293b;' }}">
+                        {{ $btn }}
+                    </button>
+                @endforeach
+                <button onclick="calcClear()" style="grid-column: span 4; padding: 8px; border-radius: 8px; border: none; cursor: pointer; background: #fee2e2; color: #dc2626; font-weight: 700;">
+                    C Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de multiplicar -->
+        <div id="tabla-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
+            <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">📐 Tabla de multiplicar</p>
+            <select id="tabla-select" onchange="mostrarTabla()" style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px; margin-bottom: 10px; font-weight: 600;">
+                @for($i = 1; $i <= 12; $i++)
+                    <option value="{{ $i }}">Tabla del {{ $i }}</option>
+                @endfor
+            </select>
+            <div id="tabla-contenido" style="font-size: 0.9rem; line-height: 1.8; color: #1e293b;"></div>
+        </div>
+
+        <!-- Bloc de notas -->
+        <div id="notas-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
+            <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">📝 Mis notas</p>
+            <textarea id="notas-texto" placeholder="Escribí tus notas acá..." style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 0.9rem; height: 150px; resize: none; font-family: 'Nunito', sans-serif;"></textarea>
+            <button onclick="guardarNotas()" style="width: 100%; margin-top: 8px; background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700;">
+                💾 Guardar notas
+            </button>
+            <p id="notas-saved" style="color: #16a34a; font-size: 0.8rem; margin-top: 4px; display: none;">✅ Guardado</p>
+        </div>
+
+        <!-- Botones de herramientas -->
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+            <button onclick="toggleTool('calc')" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(139,92,246,0.4);">
+                🧮 Calculadora
+            </button>
+            <button onclick="toggleTool('tabla')" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(37,99,235,0.4);">
+                📐 Tablas
+            </button>
+            <button onclick="toggleTool('notas')" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(22,163,74,0.4);">
+                📝 Notas
+            </button>
+        </div>
+    </div>
+
+    <!-- Botón principal -->
+    <button onclick="toggleTools()" id="tools-btn" style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(245,158,11,0.5); display: block; margin-left: auto;">
+        🛠️
+    </button>
+</div>
+
+<script>
+    // Toggle panel principal
+    function toggleTools() {
+        const panel = document.getElementById('tools-panel');
+        panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    // Toggle herramienta individual
+    function toggleTool(tool) {
+        const panels = ['calc', 'tabla', 'notas'];
+        panels.forEach(p => {
+            const el = document.getElementById(p + '-panel');
+            if (p === tool) {
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+        if (tool === 'tabla') mostrarTabla();
+        if (tool === 'notas') cargarNotas();
+    }
+
+    // Calculadora
+    let calcExpr = '';
+    function calcPress(btn) {
+        const display = document.getElementById('calc-display');
+        if (btn === '=') {
+            try {
+                const expr = calcExpr.replace('×', '*').replace('÷', '/');
+                calcExpr = String(eval(expr));
+            } catch { calcExpr = 'Error'; }
+        } else {
+            calcExpr += btn;
+        }
+        display.value = calcExpr;
+    }
+    function calcClear() {
+        calcExpr = '';
+        document.getElementById('calc-display').value = '';
+    }
+
+    // Tabla de multiplicar
+    function mostrarTabla() {
+        const n = parseInt(document.getElementById('tabla-select').value);
+        let html = '';
+        for (let i = 1; i <= 10; i++) {
+            html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f1f5f9;">
+                <span>${n} × ${i}</span>
+                <strong>${n * i}</strong>
+            </div>`;
+        }
+        document.getElementById('tabla-contenido').innerHTML = html;
+    }
+
+    // Bloc de notas con localStorage
+    const notasKey = 'notas_lesson_{{ $lesson->id }}';
+    function cargarNotas() {
+        const saved = localStorage.getItem(notasKey);
+        if (saved) document.getElementById('notas-texto').value = saved;
+    }
+    function guardarNotas() {
+        localStorage.setItem(notasKey, document.getElementById('notas-texto').value);
+        const msg = document.getElementById('notas-saved');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 2000);
+    }
+
+    // Inicializar tabla al cargar
+    mostrarTabla();
+</script>
 </x-app-layout>
