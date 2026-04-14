@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CkrAd1w-.css",
+    "file": "assets/app-CGDkl2nD.css",
     "name": "app",
     "names": [
       "app.css"
@@ -12,6 +12,12 @@
     "file": "assets/app-Clp7t88n.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/pizarra.js": {
+    "file": "assets/pizarra-D6UXKoYB.js",
+    "name": "pizarra",
+    "src": "resources/js/pizarra.js",
     "isEntry": true
   },
   "resources/js/tiptap-editor.js": {

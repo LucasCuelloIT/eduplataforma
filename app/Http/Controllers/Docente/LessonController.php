@@ -26,12 +26,20 @@ class LessonController extends Controller
             'titulo'    => 'required|string|max:255',
             'contenido' => 'nullable|string',
             'video_url' => 'nullable|url',
-            'orden'     => 'integer',
+            'pizarra'   => 'nullable|string',
+            'orden'     => 'nullable|integer',
         ]);
 
-        $course->lessons()->create($request->all());
+        $course->lessons()->create([
+            'titulo'    => $request->titulo,
+            'contenido' => $request->contenido,
+            'video_url' => $request->video_url,
+            'pizarra'   => $request->pizarra,
+            'orden'     => $request->orden ?? 0,
+        ]);
 
-        return redirect()->route('docente.courses.lessons.index', $course)->with('success', 'Lección creada correctamente.');
+        return redirect()->route('docente.courses.lessons.index', $course)
+            ->with('success', 'Lección creada correctamente.');
     }
 
     public function edit(Course $course, Lesson $lesson)
@@ -45,17 +53,26 @@ class LessonController extends Controller
             'titulo'    => 'required|string|max:255',
             'contenido' => 'nullable|string',
             'video_url' => 'nullable|url',
-            'orden'     => 'integer',
+            'pizarra'   => 'nullable|string',
+            'orden'     => 'nullable|integer',
         ]);
 
-        $lesson->update($request->all());
+        $lesson->update([
+            'titulo'    => $request->titulo,
+            'contenido' => $request->contenido,
+            'video_url' => $request->video_url,
+            'pizarra'   => $request->pizarra,
+            'orden'     => $request->orden ?? 0,
+        ]);
 
-        return redirect()->route('docente.courses.lessons.index', $course)->with('success', 'Lección actualizada correctamente.');
+        return redirect()->route('docente.courses.lessons.index', $course)
+            ->with('success', 'Lección actualizada correctamente.');
     }
 
     public function destroy(Course $course, Lesson $lesson)
     {
         $lesson->delete();
-        return redirect()->route('docente.courses.lessons.index', $course)->with('success', 'Lección eliminada correctamente.');
+        return redirect()->route('docente.courses.lessons.index', $course)
+            ->with('success', 'Lección eliminada correctamente.');
     }
 }

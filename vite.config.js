@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/tiptap-editor.js',
+                'resources/js/pizarra.js',
             ],
             refresh: true,
         }),

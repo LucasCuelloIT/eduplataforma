@@ -59,6 +59,30 @@
                         <input type="number" name="orden" value="{{ old('orden', 0) }}"
                             style="width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 10px 14px; font-size: 1rem;">
                     </div>
+                    <div style="margin-bottom: 24px;">
+    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px;">🎨 Pizarra virtual</label>
+
+    <!-- Toolbar -->
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; background: #f8faff; border: 2px solid #e5e7eb; border-bottom: none; border-radius: 10px 10px 0 0; padding: 10px;">
+        <button type="button" id="pizarra-draw" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; cursor: pointer; font-weight: 700; font-size: 0.85rem;">✏️ Dibujar</button>
+        <button type="button" id="pizarra-text" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-weight: 700; font-size: 0.85rem;">T Texto</button>
+        <button type="button" id="pizarra-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-weight: 700; font-size: 0.85rem;">↖ Seleccionar</button>
+        <button type="button" id="pizarra-delete" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fee2e2; color: #dc2626; cursor: pointer; font-weight: 700; font-size: 0.85rem;">🗑️ Borrar</button>
+        <button type="button" id="pizarra-clear" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fef9c3; color: #a16207; cursor: pointer; font-weight: 700; font-size: 0.85rem;">🧹 Limpiar todo</button>
+        <input type="color" id="pizarra-color" value="#1e293b" title="Color" style="width: 36px; height: 36px; border: 2px solid #e5e7eb; border-radius: 6px; cursor: pointer; padding: 2px;">
+        <input type="range" id="pizarra-size" min="1" max="20" value="3" style="width: 80px; accent-color: #2563eb;">
+        <button type="button" id="pizarra-save" style="padding: 6px 12px; border-radius: 6px; border: none; background: linear-gradient(135deg, #16a34a, #22c55e); color: white; cursor: pointer; font-weight: 700; font-size: 0.85rem;">💾 Guardar pizarra</button>
+        <span id="pizarra-saved" style="display: none; color: #16a34a; font-weight: 700; font-size: 0.85rem; align-self: center;">✅ Guardado</span>
+    </div>
+
+    <!-- Canvas -->
+    <div style="border: 2px solid #e5e7eb; border-radius: 0 0 10px 10px; overflow: hidden; background: white;">
+        <canvas id="pizarra-canvas"></canvas>
+    </div>
+
+    <!-- Input oculto -->
+    <input type="hidden" name="pizarra" id="pizarra-data" value="{{ old('pizarra') }}">
+</div>
 
                     <div style="display: flex; gap: 12px;">
                         <button type="submit" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 12px 28px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; font-size: 1rem;">
@@ -75,5 +99,6 @@
 
     @push('scripts')
         @vite('resources/js/tiptap-editor.js')
+        @vite('resources/js/pizarra.js')
     @endpush
 </x-app-layout>
