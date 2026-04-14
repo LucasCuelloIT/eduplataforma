@@ -169,7 +169,7 @@
     <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Arrastrá los elementos para ordenarlos correctamente.</p>
     <div id="sortable-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
         @foreach($elementos as $elemento)
-            <div class="sortable-item" draggable="true" data-exercise="{{ $exercise->id }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
+            <div class="sortable-item" data-exercise="{{ $exercise->id }}" data-value="{{ $elemento }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
                 <span style="color: #9ca3af;">⠿</span> {{ $elemento }}
             </div>
         @endforeach
@@ -311,14 +311,67 @@
         </div>
     </div>
 
-    <script>
-        function irA(index) {
-            document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
-                el.style.display = i === index ? 'block' : 'none';
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script>
+    function irA(index) {
+        document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
+            el.style.display = i === index ? 'block' : 'none';
+        });
+        window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
+    }
+
+    // Drag & Drop con Sortable.js
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[id^="sortable-"]').forEach(container => {
+            const exerciseId = container.id.replace('sortable-', '');
+
+            new Sortable(container, {
+                animation: 150,
+                handle: '.sortable-item',
+                onEnd: function() {
+                    const items = container.querySelectorAll('.sortable-item');
+                    const order = [...items].map(i => i.dataset.value);
+                    document.getElementById('order-' + exerciseId).value = order.join('|');
+                }
             });
-            window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
-        }
-    </script>
+        });
+
+        // Unir con flechas
+        let selectedIzq = null;
+        let conexiones = {};
+
+        document.querySelectorAll('.unir-izq').forEach(el => {
+            el.addEventListener('click', function() {
+                document.querySelectorAll('.unir-izq').forEach(e => {
+                    e.style.borderColor = '#93c5fd';
+                    e.style.borderWidth = '2px';
+                });
+                this.style.borderColor = '#2563eb';
+                this.style.borderWidth = '3px';
+                selectedIzq = this;
+            });
+        });
+
+        document.querySelectorAll('.unir-der').forEach(el => {
+            el.addEventListener('click', function() {
+                if (!selectedIzq) return;
+                const exerciseId = this.dataset.exercise;
+                const izqVal = selectedIzq.dataset.value;
+                const derVal = this.dataset.value;
+
+                conexiones[izqVal] = derVal;
+                selectedIzq.style.background = '#dcfce7';
+                selectedIzq.style.borderColor = '#86efac';
+                this.style.background = '#dbeafe';
+                this.style.borderColor = '#93c5fd';
+
+                const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+                document.getElementById('unir-' + exerciseId).value = pairs;
+                selectedIzq = null;
+            });
+        });
+    });
+</script>
     <!-- Botón flotante de herramientas -->
 <div id="tools-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;">
 
