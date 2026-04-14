@@ -169,7 +169,7 @@
     <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Arrastrá los elementos para ordenarlos correctamente.</p>
     <div id="sortable-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
         @foreach($elementos as $elemento)
-            <div class="sortable-item" data-exercise="{{ $exercise->id }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
+            <div class="sortable-item" draggable="true" data-exercise="{{ $exercise->id }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
                 <span style="color: #9ca3af;">⠿</span> {{ $elemento }}
             </div>
         @endforeach
