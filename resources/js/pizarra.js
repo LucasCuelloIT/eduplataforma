@@ -1,21 +1,27 @@
 import * as fabric from 'fabric'
 
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('load', () => {
     const canvasEl = document.getElementById('pizarra-canvas')
     if (!canvasEl) return
 
+    const container = canvasEl.parentElement
+    const width = container.offsetWidth || 700
+    const height = 450
+
+    canvasEl.width = width
+    canvasEl.height = height
+
     const canvas = new fabric.Canvas('pizarra-canvas', {
         isDrawingMode: true,
-        width: canvasEl.parentElement.offsetWidth - 32,
-        height: 450,
+        width: width,
+        height: height,
         backgroundColor: '#ffffff',
     })
 
-    // Brush por defecto
+    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas)
     canvas.freeDrawingBrush.color = '#1e293b'
     canvas.freeDrawingBrush.width = 3
 
-    // Toolbar
     document.getElementById('pizarra-color')?.addEventListener('input', e => {
         canvas.freeDrawingBrush.color = e.target.value
     })
@@ -51,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         canvas.add(text)
         canvas.setActiveObject(text)
+        canvas.renderAll()
     })
 
     document.getElementById('pizarra-delete')?.addEventListener('click', () => {
@@ -60,22 +67,21 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.renderAll()
     })
 
-    // Guardar pizarra
     document.getElementById('pizarra-save')?.addEventListener('click', () => {
         const dataUrl = canvas.toDataURL({ format: 'png', quality: 0.8 })
         const input = document.getElementById('pizarra-data')
         if (input) input.value = dataUrl
-        document.getElementById('pizarra-saved')?.style && (document.getElementById('pizarra-saved').style.display = 'block')
-        setTimeout(() => {
-            const el = document.getElementById('pizarra-saved')
-            if (el) el.style.display = 'none'
-        }, 2000)
+        const saved = document.getElementById('pizarra-saved')
+        if (saved) {
+            saved.style.display = 'inline'
+            setTimeout(() => saved.style.display = 'none', 2000)
+        }
     })
 
     // Cargar pizarra existente
     const existing = document.getElementById('pizarra-data')?.value
     if (existing && existing.startsWith('data:image')) {
-        fabric.Image.fromURL(existing, img => {
+        fabric.FabricImage.fromURL(existing).then(img => {
             img.scaleToWidth(canvas.width)
             canvas.add(img)
             canvas.renderAll()
