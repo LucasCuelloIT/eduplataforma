@@ -270,9 +270,12 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="footer">
-        <p>Hecho con ❤️ para los chicos de Argentina · <span>EduPlataforma</span> © {{ date('Y') }}</p>
-    </footer>
+<footer class="footer">
+    <p>Hecho con ❤️ para los chicos de Argentina · <span>EduPlataforma</span> © {{ date('Y') }}</p>
+    <p style="margin-top: 8px; font-size: 0.85rem; color: #64748b;">
+        Desarrollado con 💙 por <span style="color: #60a5fa; font-weight: 700;">Lucas</span> y <span style="color: #60a5fa; font-weight: 700;">Claude</span> · Un proyecto con propósito
+    </p>
+</footer>
 
 </body>
 </html>
