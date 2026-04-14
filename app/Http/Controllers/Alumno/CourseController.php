@@ -37,19 +37,78 @@ class CourseController extends Controller
         $exercises = $lesson->exercises()->orderBy('orden')->get();
 
         foreach ($exercises as $exercise) {
-            $respuesta = $request->input('exercise_' . $exercise->id);
-            if ($respuesta === null) continue;
 
-            $correcta = $exercise->options()
-                ->where('es_correcta', true)
-                ->first();
+            switch ($exercise->tipo) {
 
-            $esCorrecta = $correcta && strtolower(trim($correcta->texto)) === strtolower(trim($respuesta));
+                case 'completar':
+                    $respuesta = $request->input('exercise_' . $exercise->id);
+                    if ($respuesta === null) continue 2;
+                    $correcta = $exercise->options()->where('es_correcta', true)->first();
+                    $esCorrecta = $correcta && strtolower(trim($correcta->texto)) === strtolower(trim($respuesta));
+                    StudentAnswer::updateOrCreate(
+                        ['user_id' => auth()->id(), 'exercise_id' => $exercise->id],
+                        ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
+                    );
+                    break;
 
-            StudentAnswer::updateOrCreate(
-                ['user_id' => auth()->id(), 'exercise_id' => $exercise->id],
-                ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
-            );
+                case 'ordenar':
+                    $respuesta = $request->input('exercise_' . $exercise->id);
+                    if (empty($respuesta)) continue 2;
+                    $correctas = $exercise->options()->orderBy('id')->pluck('texto')->implode('|');
+                    $esCorrecta = $respuesta === $correctas;
+                    StudentAnswer::updateOrCreate(
+                        ['user_id' => auth()->id(), 'exercise_id' => $exercise->id],
+                        ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
+                    );
+                    break;
+
+                case 'unir':
+                    $respuesta = $request->input('exercise_' . $exercise->id);
+                    if (empty($respuesta)) continue 2;
+                    // Verificar que todos los pares sean correctos
+                    $paresCorrectos = $exercise->options->map(fn($o) => $o->texto)->sort()->values()->implode(',');
+                    $paresAlumno = collect(explode(',', $respuesta))->sort()->values()->implode(',');
+                    $esCorrecta = $paresCorrectos === $paresAlumno;
+                    StudentAnswer::updateOrCreate(
+                        ['user_id' => auth()->id(), 'exercise_id' => $exercise->id],
+                        ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
+                    );
+                    break;
+
+                case 'tabla':
+                    // Recolectar todas las celdas de la tabla
+                    $tablaData = json_decode($exercise->options->first()?->texto, true);
+                    $filas = $tablaData['filas'] ?? [];
+                    $respuestas = [];
+                    $todasCorrectas = true;
+                    foreach ($filas as $fi => $fila) {
+                        foreach ($fila as $ci => $celda) {
+                            if (empty($celda)) {
+                                $input = $request->input("exercise_{$exercise->id}_tabla_{$fi}_{$ci}");
+                                $respuestas[] = $input ?? '';
+                                if (empty($input)) $todasCorrectas = false;
+                            }
+                        }
+                    }
+                    $respuesta = implode('|', $respuestas);
+                    StudentAnswer::updateOrCreate(
+                        ['user_id' => auth()->id(), 'exercise_id' => $exercise->id],
+                        ['respuesta' => $respuesta, 'es_correcta' => $todasCorrectas && !empty($respuesta)]
+                    );
+                    break;
+
+                default:
+                    // multiple_choice y verdadero_falso
+                    $respuesta = $request->input('exercise_' . $exercise->id);
+                    if ($respuesta === null) continue 2;
+                    $correcta = $exercise->options()->where('es_correcta', true)->first();
+                    $esCorrecta = $correcta && strtolower(trim($correcta->texto)) === strtolower(trim($respuesta));
+                    StudentAnswer::updateOrCreate(
+                        ['user_id' => auth()->id(), 'exercise_id' => $exercise->id],
+                        ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
+                    );
+                    break;
+            }
         }
 
         return redirect()->route('alumno.courses.lesson', [$course, $lesson])
