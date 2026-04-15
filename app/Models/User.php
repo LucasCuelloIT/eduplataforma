@@ -37,4 +37,19 @@ public function studentAnswers()
 {
     return $this->hasMany(\App\Models\StudentAnswer::class);
 }
+public function points()
+{
+    return $this->hasMany(StudentPoint::class);
+}
+
+public function totalPoints()
+{
+    return $this->points()->sum('puntos');
+}
+
+public function badges()
+{
+    return $this->belongsToMany(Badge::class, 'student_badges');
+}
+
 }
