@@ -4,12 +4,14 @@
         <p style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 4px;">¿Qué aprendemos hoy?</p>
     </x-slot>
 
-    @php
-        $totalRespondidos = auth()->user()->studentAnswers()->count();
-        $totalCorrectas = auth()->user()->studentAnswers()->where('es_correcta', true)->count();
-        $totalCursos = auth()->user()->courses->count();
-        $porcentajeAciertos = $totalRespondidos > 0 ? round(($totalCorrectas / $totalRespondidos) * 100) : 0;
-    @endphp
+        @php
+            $totalRespondidos = auth()->user()->studentAnswers()->count();
+            $totalCorrectas = auth()->user()->studentAnswers()->where('es_correcta', true)->count();
+            $totalCursos = auth()->user()->courses->count();
+            $porcentajeAciertos = $totalRespondidos > 0 ? round(($totalCorrectas / $totalRespondidos) * 100) : 0;
+            $totalPuntos = auth()->user()->totalPoints();
+            $badges = auth()->user()->badges;
+        @endphp
 
     <div style="padding: 24px;">
         <div style="max-width: 1200px; margin: 0 auto;">
@@ -43,6 +45,13 @@
                     <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px;">Precisión</p>
                     <p style="font-size: 2.5rem; font-weight: 800;">{{ $porcentajeAciertos }}%</p>
                     <p style="font-size: 0.8rem; opacity: 0.8; margin-top: 4px;">de aciertos</p>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #f59e0b, #f97316); border-radius: 20px; padding: 24px; color: white; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; font-size: 5rem; opacity: 0.15;">⭐</div>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px;">Mis Puntos</p>
+                    <p style="font-size: 2.5rem; font-weight: 800;">{{ $totalPuntos }}</p>
+                    <p style="font-size: 0.8rem; opacity: 0.8; margin-top: 4px;">puntos acumulados</p>
                 </div>
 
             </div>
@@ -145,4 +154,25 @@
             }
         });
     </script>
+    <!-- Badges -->
+@if($badges->isNotEmpty())
+<div style="padding: 0 24px 24px;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px; margin-top: 24px;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 16px;">🏆 Mis logros</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                @foreach($badges as $badge)
+                    <div style="background: linear-gradient(135deg, #fef9c3, #fde68a); border: 2px solid #f59e0b; border-radius: 16px; padding: 12px 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.8rem;">{{ $badge->icono }}</span>
+                        <div>
+                            <p style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">{{ $badge->nombre }}</p>
+                            <p style="color: #6b7280; font-size: 0.78rem;">{{ $badge->descripcion }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 </x-app-layout>
