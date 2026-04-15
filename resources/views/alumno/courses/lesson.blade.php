@@ -254,7 +254,7 @@
                                                 Siguiente →
                                             </button>
                                         @else
-                                            <button type="submit" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; margin-left: auto; font-family: 'Nunito', sans-serif;">
+                                            <button type="button" onclick="enviarRespuestas()" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; margin-left: auto; font-family: 'Nunito', sans-serif;">
                                                 📨 Enviar todo
                                             </button>
                                         @endif
@@ -277,7 +277,95 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
     <script>
+// 🎵 Sistema de sonidos con Web Audio API
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    return audioCtx;
+}
+
+function playSound(type) {
+    try {
+        const ctx = getAudioCtx();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        if (type === 'correct') {
+            // Sonido alegre - dos notas ascendentes
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523, ctx.currentTime);
+            oscillator.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+            oscillator.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + 0.4);
+        } else if (type === 'wrong') {
+            // Sonido suave de error
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+            oscillator.frequency.setValueAtTime(200, ctx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + 0.3);
+        } else if (type === 'complete') {
+            // Fanfarria al completar
+            const notes = [523, 659, 784, 1047];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
+                osc.start(ctx.currentTime + i * 0.12);
+                osc.stop(ctx.currentTime + i * 0.12 + 0.3);
+            });
+        } else if (type === 'click') {
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + 0.1);
+        }
+    } catch(e) {
+        // Silenciar errores de audio
+    }
+}
+
+// Reproducir sonido al seleccionar opción
+document.addEventListener('DOMContentLoaded', () => {
+    // Sonido al hacer click en radio buttons
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => playSound('click'));
+    });
+
+    // Sonido al navegar entre ejercicios
+    document.querySelectorAll('button[onclick^="irA"]').forEach(btn => {
+        btn.addEventListener('click', () => playSound('click'));
+    });
+});
+
+// Exponer playSound globalmente
+window.playSound = playSound;
+function enviarRespuestas() {
+    playSound('complete');
+    setTimeout(() => {
+        document.getElementById('ejercicios-form').submit();
+    }, 600);
+}
+</script>
+    <script>
         function irA(index) {
+            playSound('click');
             document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
                 el.style.display = i === index ? 'block' : 'none';
             });
