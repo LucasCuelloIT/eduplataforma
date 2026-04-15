@@ -5,7 +5,7 @@
     </x-slot>
 
     @php
-        $totalCorrectas = $answers->where('es_correcta', true)->count();
+        $totalCorrectas = $answersForDisplay->where('es_correcta', true)->count();
         $total = $exercises->count();
         $nota = $total > 0 ? round(($totalCorrectas / $total) * 10, 1) : 0;
     @endphp
@@ -84,18 +84,20 @@
                     </div>
                 @endif
             @endif
-{{-- Pizarra --}}
-@if($lesson->pizarra)
-    <div style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 24px;">
-        <div style="background: linear-gradient(135deg, #f59e0b, #f97316); padding: 14px 20px; display: flex; align-items: center; gap: 8px;">
-            <span style="color: white; font-size: 1.1rem;">🎨</span>
-            <span style="color: white; font-weight: 700; font-size: 0.95rem;">Pizarra del docente</span>
-        </div>
-        <div style="padding: 16px;">
-            <img src="{{ $lesson->pizarra }}" style="width: 100%; border-radius: 10px; border: 2px solid #e5e7eb;" alt="Pizarra">
-        </div>
-    </div>
-@endif
+
+            {{-- Pizarra --}}
+            @if($lesson->pizarra)
+                <div style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 24px;">
+                    <div style="background: linear-gradient(135deg, #f59e0b, #f97316); padding: 14px 20px; display: flex; align-items: center; gap: 8px;">
+                        <span style="color: white; font-size: 1.1rem;">🎨</span>
+                        <span style="color: white; font-weight: 700; font-size: 0.95rem;">Pizarra del docente</span>
+                    </div>
+                    <div style="padding: 16px;">
+                        <img src="{{ $lesson->pizarra }}" style="width: 100%; border-radius: 10px; border: 2px solid #e5e7eb;" alt="Pizarra">
+                    </div>
+                </div>
+            @endif
+
             {{-- Ejercicios --}}
             @if($exercises->isNotEmpty())
                 <div style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden;">
@@ -109,7 +111,7 @@
 
                     <div style="padding: 24px;">
 
-                        @if($answers->isNotEmpty())
+                        @if($answersForDisplay->isNotEmpty())
                             <div style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px;">
                                 <span style="font-size: 3rem;">🏆</span>
                                 <div style="flex: 1;">
@@ -130,13 +132,8 @@
                         <form action="{{ route('alumno.courses.responder', [$course, $lesson]) }}" method="POST" id="ejercicios-form">
                             @csrf
                             @foreach($exercises as $exercise)
-                                <div class="ejercicio-card" id="ejercicio-{{ $loop->index }}" style="display: {{ $loop->first ? 'block' : 'none' }}; border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 16px;
-                                    @if(isset($answers[$exercise->id]))
-                                        @if($answers[$exercise->id]->es_correcta) border-color: #86efac; background: #f0fdf4;
-                                        @else border-color: #fca5a5; background: #fef2f2;
-                                        @endif
-                                    @endif
-                                ">
+                                <div class="ejercicio-card" id="ejercicio-{{ $loop->index }}" style="display: {{ $loop->first ? 'block' : 'none' }}; border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                                         <div style="display: flex; gap: 6px;">
                                             @foreach($exercises as $dot)
@@ -152,132 +149,99 @@
                                     </div>
 
                                     @if($exercise->tipo === 'completar')
-    <input type="text" name="exercise_{{ $exercise->id }}"
-        value="{{ $answers[$exercise->id]->respuesta ?? '' }}"
-        style="width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 1rem; font-family: 'Nunito', sans-serif;"
-        placeholder="Escribí tu respuesta aquí...">
-    @if(isset($answers[$exercise->id]))
-        @if($answers[$exercise->id]->es_correcta)
-            <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
-        @else
-            <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
-        @endif
-    @endif
+                                        <input type="text" name="exercise_{{ $exercise->id }}"
+                                            value=""
+                                            style="width: 100%; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 1rem; font-family: 'Nunito', sans-serif;"
+                                            placeholder="Escribí tu respuesta aquí...">
 
-@elseif($exercise->tipo === 'ordenar')
-    @php $elementos = $exercise->options->pluck('texto')->shuffle(); @endphp
-    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Arrastrá los elementos para ordenarlos correctamente.</p>
-    <div id="sortable-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
-        @foreach($elementos as $elemento)
-            <div class="sortable-item" data-exercise="{{ $exercise->id }}" data-value="{{ $elemento }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
-                <span style="color: #9ca3af;">⠿</span> {{ $elemento }}
-            </div>
-        @endforeach
-    </div>
-    <input type="hidden" name="exercise_{{ $exercise->id }}" id="order-{{ $exercise->id }}" value="">
-    @if(isset($answers[$exercise->id]))
-        @if($answers[$exercise->id]->es_correcta)
-            <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
-        @else
-            <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
-        @endif
-    @endif
+                                    @elseif($exercise->tipo === 'ordenar')
+                                        @php $elementos = $exercise->options->pluck('texto')->shuffle(); @endphp
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Arrastrá los elementos para ordenarlos correctamente.</p>
+                                        <div id="sortable-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+                                            @foreach($elementos as $elemento)
+                                                <div class="sortable-item" data-exercise="{{ $exercise->id }}" data-value="{{ $elemento }}" style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #1e293b;">
+                                                    <span style="color: #9ca3af;">⠿</span> {{ $elemento }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <input type="hidden" name="exercise_{{ $exercise->id }}" id="order-{{ $exercise->id }}" value="">
 
-@elseif($exercise->tipo === 'unir')
-    @php
-        $pares = $exercise->options->map(fn($o) => explode('|', $o->texto));
-        $izquierda = $pares->pluck(0)->shuffle();
-        $derecha = $pares->pluck(1)->shuffle();
-    @endphp
-    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Hacé clic en un elemento de la izquierda y luego en el de la derecha para unirlos.</p>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div id="unir-izq-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
-            @foreach($izquierda as $item)
-                <div class="unir-izq" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
-                    style="background: #dbeafe; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #1d4ed8; text-align: center;">
-                    {{ $item }}
-                </div>
-            @endforeach
-        </div>
-        <div id="unir-der-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
-            @foreach($derecha as $item)
-                <div class="unir-der" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
-                    style="background: #dcfce7; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #15803d; text-align: center;">
-                    {{ $item }}
-                </div>
-            @endforeach
-        </div>
-    </div>
-    <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-{{ $exercise->id }}" value="">
-    @if(isset($answers[$exercise->id]))
-        @if($answers[$exercise->id]->es_correcta)
-            <p style="color: #16a34a; font-weight: 700; margin-top: 8px;">✅ ¡Correcto!</p>
-        @else
-            <p style="color: #dc2626; font-weight: 700; margin-top: 8px;">❌ Incorrecto, intentá de nuevo.</p>
-        @endif
-    @endif
+                                    @elseif($exercise->tipo === 'unir')
+                                        @php
+                                            $pares = $exercise->options->map(fn($o) => explode('|', $o->texto));
+                                            $izquierda = $pares->pluck(0)->shuffle();
+                                            $derecha = $pares->pluck(1)->shuffle();
+                                        @endphp
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Hacé clic en un elemento de la izquierda y luego en el de la derecha para unirlos.</p>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                            <div id="unir-izq-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+                                                @foreach($izquierda as $item)
+                                                    <div class="unir-izq" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
+                                                        style="background: #dbeafe; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #1d4ed8; text-align: center;">
+                                                        {{ $item }}
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <div id="unir-der-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+                                                @foreach($derecha as $item)
+                                                    <div class="unir-der" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
+                                                        style="background: #dcfce7; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #15803d; text-align: center;">
+                                                        {{ $item }}
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-{{ $exercise->id }}" value="">
 
-@elseif($exercise->tipo === 'tabla')
-    @php
-        $tablaData = json_decode($exercise->options->first()?->texto, true);
-        $columnas = $tablaData['columnas'] ?? [];
-        $filas = $tablaData['filas'] ?? [];
-    @endphp
-    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Completá las celdas vacías de la tabla.</p>
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    @foreach($columnas as $col)
-                        <th style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 10px 14px; text-align: center; font-weight: 700;">{{ $col }}</th>
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($filas as $fi => $fila)
-                    <tr>
-                        @foreach($fila as $ci => $celda)
-                            <td style="border: 2px solid #e5e7eb; padding: 8px;">
-                                @if(empty($celda))
-                                    <input type="text" name="exercise_{{ $exercise->id }}_tabla_{{ $fi }}_{{ $ci }}"
-                                        style="width: 100%; border: none; outline: none; font-size: 0.9rem; text-align: center; font-family: 'Nunito', sans-serif;"
-                                        placeholder="...">
-                                @else
-                                    <span style="display: block; text-align: center; font-weight: 600; color: #1e293b;">{{ $celda }}</span>
-                                @endif
-                            </td>
-                        @endforeach
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                                    @elseif($exercise->tipo === 'tabla')
+                                        @php
+                                            $tablaData = json_decode($exercise->options->first()?->texto, true);
+                                            $columnas = $tablaData['columnas'] ?? [];
+                                            $filas = $tablaData['filas'] ?? [];
+                                        @endphp
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Completá las celdas vacías de la tabla.</p>
+                                        <div style="overflow-x: auto;">
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <thead>
+                                                    <tr>
+                                                        @foreach($columnas as $col)
+                                                            <th style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 10px 14px; text-align: center; font-weight: 700;">{{ $col }}</th>
+                                                        @endforeach
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($filas as $fi => $fila)
+                                                        <tr>
+                                                            @foreach($fila as $ci => $celda)
+                                                                <td style="border: 2px solid #e5e7eb; padding: 8px;">
+                                                                    @if(empty($celda))
+                                                                        <input type="text" name="exercise_{{ $exercise->id }}_tabla_{{ $fi }}_{{ $ci }}"
+                                                                            style="width: 100%; border: none; outline: none; font-size: 0.9rem; text-align: center; font-family: 'Nunito', sans-serif;"
+                                                                            placeholder="...">
+                                                                    @else
+                                                                        <span style="display: block; text-align: center; font-weight: 600; color: #1e293b;">{{ $celda }}</span>
+                                                                    @endif
+                                                                </td>
+                                                            @endforeach
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-@else
-    {{-- multiple_choice y verdadero_falso --}}
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-        @foreach($exercise->options as $option)
-            <label style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;
-                @if(isset($answers[$exercise->id]))
-                    @if($option->es_correcta) background: #dcfce7; border-color: #86efac;
-                    @elseif($answers[$exercise->id]->respuesta === $option->texto && !$option->es_correcta) background: #fee2e2; border-color: #fca5a5;
-                    @endif
-                @endif
-            ">
-                <input type="radio" name="exercise_{{ $exercise->id }}"
-                    value="{{ $option->texto }}"
-                    {{ isset($answers[$exercise->id]) && $answers[$exercise->id]->respuesta === $option->texto ? 'checked' : '' }}
-                    style="width: 18px; height: 18px; accent-color: #8b5cf6;">
-                <span style="color: #1e293b; font-weight: 600; flex: 1;">{{ $option->texto }}</span>
-                @if(isset($answers[$exercise->id]))
-                    @if($option->es_correcta) <span style="color: #16a34a; font-size: 1.1rem;">✅</span>
-                    @elseif($answers[$exercise->id]->respuesta === $option->texto && !$option->es_correcta) <span style="color: #dc2626; font-size: 1.1rem;">❌</span>
-                    @endif
-                @endif
-            </label>
-        @endforeach
-    </div>
-@endif
+                                    @else
+                                        {{-- multiple_choice y verdadero_falso --}}
+                                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                                            @foreach($exercise->options as $option)
+                                                <label style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;">
+                                                    <input type="radio" name="exercise_{{ $exercise->id }}"
+                                                        value="{{ $option->texto }}"
+                                                        style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                                                    <span style="color: #1e293b; font-weight: 600; flex: 1;">{{ $option->texto }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @endif
 
                                     <div style="display: flex; gap: 10px; margin-top: 16px;">
                                         @if(!$loop->first)
@@ -298,7 +262,7 @@
                                 </div>
                             @endforeach
 
-                            @if($answers->isNotEmpty() && $nota >= 7 && $total > 0)
+                            @if($answersForDisplay->isNotEmpty() && $nota >= 7 && $total > 0)
                                 <a href="{{ route('alumno.courses.minigame', [$course, $lesson]) }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; background: linear-gradient(135deg, #f59e0b, #f97316); color: white; padding: 14px 32px; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-decoration: none;">
                                     🎮 ¡Desbloquear Minijuego!
                                 </a>
@@ -311,199 +275,165 @@
         </div>
     </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-<script>
-    function irA(index) {
-        document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
-            el.style.display = i === index ? 'block' : 'none';
-        });
-        window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
-    }
-
-    // Drag & Drop con Sortable.js
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('[id^="sortable-"]').forEach(container => {
-            const exerciseId = container.id.replace('sortable-', '');
-
-            new Sortable(container, {
-                animation: 150,
-                handle: '.sortable-item',
-                onEnd: function() {
-                    const items = container.querySelectorAll('.sortable-item');
-                    const order = [...items].map(i => i.dataset.value);
-                    document.getElementById('order-' + exerciseId).value = order.join('|');
-                }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <script>
+        function irA(index) {
+            document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
+                el.style.display = i === index ? 'block' : 'none';
             });
-        });
+            window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
+        }
 
-        // Unir con flechas
-        let selectedIzq = null;
-        let conexiones = {};
-
-        document.querySelectorAll('.unir-izq').forEach(el => {
-            el.addEventListener('click', function() {
-                document.querySelectorAll('.unir-izq').forEach(e => {
-                    e.style.borderColor = '#93c5fd';
-                    e.style.borderWidth = '2px';
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[id^="sortable-"]').forEach(container => {
+                const exerciseId = container.id.replace('sortable-', '');
+                new Sortable(container, {
+                    animation: 150,
+                    handle: '.sortable-item',
+                    onEnd: function() {
+                        const items = container.querySelectorAll('.sortable-item');
+                        const order = [...items].map(i => i.dataset.value);
+                        document.getElementById('order-' + exerciseId).value = order.join('|');
+                    }
                 });
-                this.style.borderColor = '#2563eb';
-                this.style.borderWidth = '3px';
-                selectedIzq = this;
+            });
+
+            let selectedIzq = null;
+            let conexiones = {};
+
+            document.querySelectorAll('.unir-izq').forEach(el => {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('.unir-izq').forEach(e => {
+                        e.style.borderColor = '#93c5fd';
+                        e.style.borderWidth = '2px';
+                    });
+                    this.style.borderColor = '#2563eb';
+                    this.style.borderWidth = '3px';
+                    selectedIzq = this;
+                });
+            });
+
+            document.querySelectorAll('.unir-der').forEach(el => {
+                el.addEventListener('click', function() {
+                    if (!selectedIzq) return;
+                    const exerciseId = this.dataset.exercise;
+                    const izqVal = selectedIzq.dataset.value;
+                    const derVal = this.dataset.value;
+                    conexiones[izqVal] = derVal;
+                    selectedIzq.style.background = '#dcfce7';
+                    selectedIzq.style.borderColor = '#86efac';
+                    this.style.background = '#dbeafe';
+                    this.style.borderColor = '#93c5fd';
+                    const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+                    document.getElementById('unir-' + exerciseId).value = pairs;
+                    selectedIzq = null;
+                });
             });
         });
+    </script>
 
-        document.querySelectorAll('.unir-der').forEach(el => {
-            el.addEventListener('click', function() {
-                if (!selectedIzq) return;
-                const exerciseId = this.dataset.exercise;
-                const izqVal = selectedIzq.dataset.value;
-                const derVal = this.dataset.value;
-
-                conexiones[izqVal] = derVal;
-                selectedIzq.style.background = '#dcfce7';
-                selectedIzq.style.borderColor = '#86efac';
-                this.style.background = '#dbeafe';
-                this.style.borderColor = '#93c5fd';
-
-                const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-                document.getElementById('unir-' + exerciseId).value = pairs;
-                selectedIzq = null;
-            });
-        });
-    });
-</script>
     <!-- Botón flotante de herramientas -->
-<div id="tools-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;">
+    <div id="tools-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;">
+        <div id="tools-panel" style="display: none; flex-direction: column; gap: 10px; margin-bottom: 12px;">
 
-    <!-- Herramientas desplegables -->
-    <div id="tools-panel" style="display: none; flex-direction: column; gap: 10px; margin-bottom: 12px;">
-
-        <!-- Calculadora -->
-        <div id="calc-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
-            <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">🧮 Calculadora</p>
-            <input id="calc-display" type="text" readonly style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 1.1rem; text-align: right; margin-bottom: 8px; font-family: monospace;">
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-                @foreach(['7','8','9','÷','4','5','6','×','1','2','3','-','0','.','=','+'] as $btn)
-                    <button onclick="calcPress('{{ $btn }}')" style="padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.95rem;
-                        {{ in_array($btn, ['÷','×','-','+','=']) ? 'background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white;' : 'background: #f1f5f9; color: #1e293b;' }}">
-                        {{ $btn }}
+            <div id="calc-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
+                <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">🧮 Calculadora</p>
+                <input id="calc-display" type="text" readonly style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 1.1rem; text-align: right; margin-bottom: 8px; font-family: monospace;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                    @foreach(['7','8','9','÷','4','5','6','×','1','2','3','-','0','.','=','+'] as $btn)
+                        <button onclick="calcPress('{{ $btn }}')" style="padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+                            {{ in_array($btn, ['÷','×','-','+','=']) ? 'background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white;' : 'background: #f1f5f9; color: #1e293b;' }}">
+                            {{ $btn }}
+                        </button>
+                    @endforeach
+                    <button onclick="calcClear()" style="grid-column: span 4; padding: 8px; border-radius: 8px; border: none; cursor: pointer; background: #fee2e2; color: #dc2626; font-weight: 700;">
+                        C Limpiar
                     </button>
-                @endforeach
-                <button onclick="calcClear()" style="grid-column: span 4; padding: 8px; border-radius: 8px; border: none; cursor: pointer; background: #fee2e2; color: #dc2626; font-weight: 700;">
-                    C Limpiar
+                </div>
+            </div>
+
+            <div id="tabla-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
+                <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">📐 Tabla de multiplicar</p>
+                <select id="tabla-select" onchange="mostrarTabla()" style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px; margin-bottom: 10px; font-weight: 600;">
+                    @for($i = 1; $i <= 12; $i++)
+                        <option value="{{ $i }}">Tabla del {{ $i }}</option>
+                    @endfor
+                </select>
+                <div id="tabla-contenido" style="font-size: 0.9rem; line-height: 1.8; color: #1e293b;"></div>
+            </div>
+
+            <div id="notas-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
+                <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">📝 Mis notas</p>
+                <textarea id="notas-texto" placeholder="Escribí tus notas acá..." style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 0.9rem; height: 150px; resize: none; font-family: 'Nunito', sans-serif;"></textarea>
+                <button onclick="guardarNotas()" style="width: 100%; margin-top: 8px; background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700;">
+                    💾 Guardar notas
                 </button>
+                <p id="notas-saved" style="color: #16a34a; font-size: 0.8rem; margin-top: 4px; display: none;">✅ Guardado</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                <button onclick="toggleTool('calc')" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(139,92,246,0.4);">🧮 Calculadora</button>
+                <button onclick="toggleTool('tabla')" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(37,99,235,0.4);">📐 Tablas</button>
+                <button onclick="toggleTool('notas')" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(22,163,74,0.4);">📝 Notas</button>
             </div>
         </div>
 
-        <!-- Tabla de multiplicar -->
-        <div id="tabla-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
-            <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">📐 Tabla de multiplicar</p>
-            <select id="tabla-select" onchange="mostrarTabla()" style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px; margin-bottom: 10px; font-weight: 600;">
-                @for($i = 1; $i <= 12; $i++)
-                    <option value="{{ $i }}">Tabla del {{ $i }}</option>
-                @endfor
-            </select>
-            <div id="tabla-contenido" style="font-size: 0.9rem; line-height: 1.8; color: #1e293b;"></div>
-        </div>
-
-        <!-- Bloc de notas -->
-        <div id="notas-panel" style="display: none; background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 16px; width: 240px;">
-            <p style="font-weight: 800; color: #1e293b; margin-bottom: 10px;">📝 Mis notas</p>
-            <textarea id="notas-texto" placeholder="Escribí tus notas acá..." style="width: 100%; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px; font-size: 0.9rem; height: 150px; resize: none; font-family: 'Nunito', sans-serif;"></textarea>
-            <button onclick="guardarNotas()" style="width: 100%; margin-top: 8px; background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700;">
-                💾 Guardar notas
-            </button>
-            <p id="notas-saved" style="color: #16a34a; font-size: 0.8rem; margin-top: 4px; display: none;">✅ Guardado</p>
-        </div>
-
-        <!-- Botones de herramientas -->
-        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-            <button onclick="toggleTool('calc')" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(139,92,246,0.4);">
-                🧮 Calculadora
-            </button>
-            <button onclick="toggleTool('tabla')" style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(37,99,235,0.4);">
-                📐 Tablas
-            </button>
-            <button onclick="toggleTool('notas')" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: white; border: none; border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(22,163,74,0.4);">
-                📝 Notas
-            </button>
-        </div>
+        <button onclick="toggleTools()" id="tools-btn" style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(245,158,11,0.5); display: block; margin-left: auto;">
+            🛠️
+        </button>
     </div>
 
-    <!-- Botón principal -->
-    <button onclick="toggleTools()" id="tools-btn" style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(245,158,11,0.5); display: block; margin-left: auto;">
-        🛠️
-    </button>
-</div>
+    <script>
+        function toggleTools() {
+            const panel = document.getElementById('tools-panel');
+            panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+        }
 
-<script>
-    // Toggle panel principal
-    function toggleTools() {
-        const panel = document.getElementById('tools-panel');
-        panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-    }
+        function toggleTool(tool) {
+            const panels = ['calc', 'tabla', 'notas'];
+            panels.forEach(p => {
+                const el = document.getElementById(p + '-panel');
+                el.style.display = p === tool && el.style.display === 'none' ? 'block' : 'none';
+            });
+            if (tool === 'tabla') mostrarTabla();
+            if (tool === 'notas') cargarNotas();
+        }
 
-    // Toggle herramienta individual
-    function toggleTool(tool) {
-        const panels = ['calc', 'tabla', 'notas'];
-        panels.forEach(p => {
-            const el = document.getElementById(p + '-panel');
-            if (p === tool) {
-                el.style.display = el.style.display === 'none' ? 'block' : 'none';
-            } else {
-                el.style.display = 'none';
+        let calcExpr = '';
+        function calcPress(btn) {
+            const display = document.getElementById('calc-display');
+            if (btn === '=') {
+                try { calcExpr = String(eval(calcExpr.replace('×', '*').replace('÷', '/'))); }
+                catch { calcExpr = 'Error'; }
+            } else { calcExpr += btn; }
+            display.value = calcExpr;
+        }
+        function calcClear() {
+            calcExpr = '';
+            document.getElementById('calc-display').value = '';
+        }
+
+        function mostrarTabla() {
+            const n = parseInt(document.getElementById('tabla-select').value);
+            let html = '';
+            for (let i = 1; i <= 10; i++) {
+                html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f1f5f9;"><span>${n} × ${i}</span><strong>${n * i}</strong></div>`;
             }
-        });
-        if (tool === 'tabla') mostrarTabla();
-        if (tool === 'notas') cargarNotas();
-    }
-
-    // Calculadora
-    let calcExpr = '';
-    function calcPress(btn) {
-        const display = document.getElementById('calc-display');
-        if (btn === '=') {
-            try {
-                const expr = calcExpr.replace('×', '*').replace('÷', '/');
-                calcExpr = String(eval(expr));
-            } catch { calcExpr = 'Error'; }
-        } else {
-            calcExpr += btn;
+            document.getElementById('tabla-contenido').innerHTML = html;
         }
-        display.value = calcExpr;
-    }
-    function calcClear() {
-        calcExpr = '';
-        document.getElementById('calc-display').value = '';
-    }
 
-    // Tabla de multiplicar
-    function mostrarTabla() {
-        const n = parseInt(document.getElementById('tabla-select').value);
-        let html = '';
-        for (let i = 1; i <= 10; i++) {
-            html += `<div style="display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f1f5f9;">
-                <span>${n} × ${i}</span>
-                <strong>${n * i}</strong>
-            </div>`;
+        const notasKey = 'notas_lesson_{{ $lesson->id }}';
+        function cargarNotas() {
+            const saved = localStorage.getItem(notasKey);
+            if (saved) document.getElementById('notas-texto').value = saved;
         }
-        document.getElementById('tabla-contenido').innerHTML = html;
-    }
+        function guardarNotas() {
+            localStorage.setItem(notasKey, document.getElementById('notas-texto').value);
+            const msg = document.getElementById('notas-saved');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 2000);
+        }
 
-    // Bloc de notas con localStorage
-    const notasKey = 'notas_lesson_{{ $lesson->id }}';
-    function cargarNotas() {
-        const saved = localStorage.getItem(notasKey);
-        if (saved) document.getElementById('notas-texto').value = saved;
-    }
-    function guardarNotas() {
-        localStorage.setItem(notasKey, document.getElementById('notas-texto').value);
-        const msg = document.getElementById('notas-saved');
-        msg.style.display = 'block';
-        setTimeout(() => msg.style.display = 'none', 2000);
-    }
-
-    // Inicializar tabla al cargar
-    mostrarTabla();
-</script>
+        mostrarTabla();
+    </script>
 </x-app-layout>

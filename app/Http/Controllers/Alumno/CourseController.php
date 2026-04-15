@@ -29,7 +29,13 @@ class CourseController extends Controller
             ->whereIn('exercise_id', $exercises->pluck('id'))
             ->get()
             ->keyBy('exercise_id');
-        return view('alumno.courses.lesson', compact('course', 'lesson', 'exercises', 'answers'));
+
+        // Para el formulario siempre mostramos limpio
+        // pero guardamos las respuestas para mostrar la nota
+        $answersForDisplay = $answers;
+        $emptyAnswers = collect(); // formulario siempre vacío
+
+        return view('alumno.courses.lesson', compact('course', 'lesson', 'exercises', 'answersForDisplay', 'emptyAnswers'));
     }
 
     public function responder(Request $request, Course $course, Lesson $lesson)
