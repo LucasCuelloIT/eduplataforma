@@ -389,34 +389,43 @@ function enviarRespuestas() {
             let selectedIzq = null;
             let conexiones = {};
 
-            document.querySelectorAll('.unir-izq').forEach(el => {
-                el.addEventListener('click', function() {
-                    document.querySelectorAll('.unir-izq').forEach(e => {
-                        e.style.borderColor = '#93c5fd';
-                        e.style.borderWidth = '2px';
-                    });
-                    this.style.borderColor = '#2563eb';
-                    this.style.borderWidth = '3px';
-                    selectedIzq = this;
-                });
-            });
+            // Unir con flechas - delegación de eventos
+let selectedIzq = null;
+let conexiones = {};
 
-            document.querySelectorAll('.unir-der').forEach(el => {
-                el.addEventListener('click', function() {
-                    if (!selectedIzq) return;
-                    const exerciseId = this.dataset.exercise;
-                    const izqVal = selectedIzq.dataset.value;
-                    const derVal = this.dataset.value;
-                    conexiones[izqVal] = derVal;
-                    selectedIzq.style.background = '#dcfce7';
-                    selectedIzq.style.borderColor = '#86efac';
-                    this.style.background = '#dbeafe';
-                    this.style.borderColor = '#93c5fd';
-                    const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-                    document.getElementById('unir-' + exerciseId).value = pairs;
-                    selectedIzq = null;
-                });
-            });
+document.addEventListener('click', function(e) {
+    const izq = e.target.closest('.unir-izq');
+    const der = e.target.closest('.unir-der');
+
+    if (izq) {
+        document.querySelectorAll('.unir-izq').forEach(el => {
+            el.style.borderColor = '#93c5fd';
+            el.style.borderWidth = '2px';
+            el.style.background = '#dbeafe';
+        });
+        izq.style.borderColor = '#2563eb';
+        izq.style.borderWidth = '3px';
+        izq.style.background = '#bfdbfe';
+        selectedIzq = izq;
+    }
+
+    if (der && selectedIzq) {
+        const exerciseId = der.dataset.exercise;
+        const izqVal = selectedIzq.dataset.value;
+        const derVal = der.dataset.value;
+
+        conexiones[izqVal] = derVal;
+        selectedIzq.style.background = '#dcfce7';
+        selectedIzq.style.borderColor = '#86efac';
+        der.style.background = '#dbeafe';
+        der.style.borderColor = '#93c5fd';
+
+        const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+        const input = document.getElementById('unir-' + exerciseId);
+        if (input) input.value = pairs;
+        selectedIzq = null;
+    }
+});
         });
     </script>
 
