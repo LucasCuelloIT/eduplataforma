@@ -82,17 +82,29 @@ class CourseController extends Controller
                     break;
 
                 case 'unir':
-                    $respuesta = $request->input('exercise_' . $exercise->id);
-                    if (empty($respuesta)) continue 2;
-                    $paresCorrectos = $exercise->options->map(fn($o) => $o->texto)->sort()->values()->implode(',');
-                    $paresAlumno = collect(explode(',', $respuesta))->sort()->values()->implode(',');
-                    $esCorrecta = $paresCorrectos === $paresAlumno;
-                    StudentAnswer::updateOrCreate(
-                        ['user_id' => $user->id, 'exercise_id' => $exercise->id],
-                        ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
-                    );
-                    if ($esCorrecta && !$yaRespondioCorrect) { $puntosGanados += 15; $nuevosCorrects++; }
-                    break;
+    $respuesta = $request->input('exercise_' . $exercise->id);
+    if (empty($respuesta)) continue 2;
+
+    // Normalizar pares correctos
+    $paresCorrectos = $exercise->options->map(function($o) {
+        $partes = explode('|', $o->texto);
+        return strtolower(trim($partes[0])) . '|' . strtolower(trim($partes[1]));
+    })->sort()->values()->implode(',');
+
+    // Normalizar pares del alumno
+    $paresAlumno = collect(explode(',', $respuesta))->map(function($par) {
+        $partes = explode('|', $par);
+        return strtolower(trim($partes[0])) . '|' . strtolower(trim($partes[1]));
+    })->sort()->values()->implode(',');
+
+    $esCorrecta = $paresCorrectos === $paresAlumno;
+
+    StudentAnswer::updateOrCreate(
+        ['user_id' => $user->id, 'exercise_id' => $exercise->id],
+        ['respuesta' => $respuesta, 'es_correcta' => $esCorrecta]
+    );
+    if ($esCorrecta && !$yaRespondioCorrect) { $puntosGanados += 15; $nuevosCorrects++; }
+    break;
 
                 case 'tabla':
                     $tablaData = json_decode($exercise->options->first()?->texto, true);
