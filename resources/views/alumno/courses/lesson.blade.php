@@ -352,8 +352,8 @@ let selectedIzq = null;
 let conexiones = {};
 
 document.addEventListener('click', function(e) {
-    const izq = e.target.closest('.unir-izq');
-    const der = e.target.closest('.unir-der');
+    const izq = e.target.classList.contains('unir-izq') ? e.target : e.target.closest('.unir-izq');
+    const der = e.target.classList.contains('unir-der') ? e.target : e.target.closest('.unir-der');
 
     if (izq) {
         document.querySelectorAll('.unir-izq').forEach(el => {
