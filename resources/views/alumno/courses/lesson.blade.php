@@ -364,70 +364,69 @@ function enviarRespuestas() {
 }
 </script>
     <script>
-        function irA(index) {
-            playSound('click');
-            document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
-                el.style.display = i === index ? 'block' : 'none';
+    function irA(index) {
+        playSound('click');
+        document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
+            el.style.display = i === index ? 'block' : 'none';
+        });
+        window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Drag & Drop con Sortable.js
+        document.querySelectorAll('[id^="sortable-"]').forEach(container => {
+            const exerciseId = container.id.replace('sortable-', '');
+            new Sortable(container, {
+                animation: 150,
+                handle: '.sortable-item',
+                onEnd: function() {
+                    const items = container.querySelectorAll('.sortable-item');
+                    const order = [...items].map(i => i.dataset.value);
+                    document.getElementById('order-' + exerciseId).value = order.join('|');
+                }
             });
-            window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
+        });
+    });
+
+    // Unir con flechas - fuera del DOMContentLoaded para evitar conflictos
+    let selectedIzq = null;
+    let conexiones = {};
+
+    document.addEventListener('click', function(e) {
+        const izq = e.target.closest('.unir-izq');
+        const der = e.target.closest('.unir-der');
+
+        if (izq) {
+            document.querySelectorAll('.unir-izq').forEach(el => {
+                el.style.borderColor = '#93c5fd';
+                el.style.borderWidth = '2px';
+                el.style.background = '#dbeafe';
+            });
+            izq.style.borderColor = '#2563eb';
+            izq.style.borderWidth = '3px';
+            izq.style.background = '#bfdbfe';
+            selectedIzq = izq;
+            return;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('[id^="sortable-"]').forEach(container => {
-                const exerciseId = container.id.replace('sortable-', '');
-                new Sortable(container, {
-                    animation: 150,
-                    handle: '.sortable-item',
-                    onEnd: function() {
-                        const items = container.querySelectorAll('.sortable-item');
-                        const order = [...items].map(i => i.dataset.value);
-                        document.getElementById('order-' + exerciseId).value = order.join('|');
-                    }
-                });
-            });
+        if (der && selectedIzq) {
+            const exerciseId = der.dataset.exercise;
+            const izqVal = selectedIzq.dataset.value;
+            const derVal = der.dataset.value;
 
-            let selectedIzq = null;
-            let conexiones = {};
+            conexiones[izqVal] = derVal;
+            selectedIzq.style.background = '#dcfce7';
+            selectedIzq.style.borderColor = '#86efac';
+            der.style.background = '#dbeafe';
+            der.style.borderColor = '#93c5fd';
 
-            // Unir con flechas - delegación de eventos
-let selectedIzq = null;
-let conexiones = {};
-
-document.addEventListener('click', function(e) {
-    const izq = e.target.closest('.unir-izq');
-    const der = e.target.closest('.unir-der');
-
-    if (izq) {
-        document.querySelectorAll('.unir-izq').forEach(el => {
-            el.style.borderColor = '#93c5fd';
-            el.style.borderWidth = '2px';
-            el.style.background = '#dbeafe';
-        });
-        izq.style.borderColor = '#2563eb';
-        izq.style.borderWidth = '3px';
-        izq.style.background = '#bfdbfe';
-        selectedIzq = izq;
-    }
-
-    if (der && selectedIzq) {
-        const exerciseId = der.dataset.exercise;
-        const izqVal = selectedIzq.dataset.value;
-        const derVal = der.dataset.value;
-
-        conexiones[izqVal] = derVal;
-        selectedIzq.style.background = '#dcfce7';
-        selectedIzq.style.borderColor = '#86efac';
-        der.style.background = '#dbeafe';
-        der.style.borderColor = '#93c5fd';
-
-        const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-        const input = document.getElementById('unir-' + exerciseId);
-        if (input) input.value = pairs;
-        selectedIzq = null;
-    }
-});
-        });
-    </script>
+            const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+            const input = document.getElementById('unir-' + exerciseId);
+            if (input) input.value = pairs;
+            selectedIzq = null;
+        }
+    });
+</script>
 
     <!-- Botón flotante de herramientas -->
     <div id="tools-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;">
