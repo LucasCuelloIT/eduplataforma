@@ -174,18 +174,22 @@
                                         @endphp
                                         <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Hacé clic en un elemento de la izquierda y luego en el de la derecha para unirlos.</p>
                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                            <div id="unir-izq-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+                                            <div style="display: flex; flex-direction: column; gap: 8px;">
                                                 @foreach($izquierda as $item)
-                                                    <div class="unir-izq" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
-                                                        style="background: #dbeafe; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #1d4ed8; text-align: center;">
+                                                    <div onclick="seleccionarIzq(this)"
+                                                        data-exercise="{{ $exercise->id }}"
+                                                        data-value="{{ $item }}"
+                                                        style="background: #dbeafe; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #1d4ed8; text-align: center; user-select: none;">
                                                         {{ $item }}
                                                     </div>
                                                 @endforeach
                                             </div>
-                                            <div id="unir-der-{{ $exercise->id }}" style="display: flex; flex-direction: column; gap: 8px;">
+                                            <div style="display: flex; flex-direction: column; gap: 8px;">
                                                 @foreach($derecha as $item)
-                                                    <div class="unir-der" data-exercise="{{ $exercise->id }}" data-value="{{ $item }}"
-                                                        style="background: #dcfce7; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #15803d; text-align: center;">
+                                                    <div onclick="seleccionarDer(this)"
+                                                        data-exercise="{{ $exercise->id }}"
+                                                        data-value="{{ $item }}"
+                                                        style="background: #dcfce7; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #15803d; text-align: center; user-select: none;">
                                                         {{ $item }}
                                                     </div>
                                                 @endforeach
@@ -230,7 +234,6 @@
                                         </div>
 
                                     @else
-                                        {{-- multiple_choice y verdadero_falso --}}
                                         <div style="display: flex; flex-direction: column; gap: 8px;">
                                             @foreach($exercise->options as $option)
                                                 <label style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;">
@@ -276,136 +279,130 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-<script>
-// 🎵 Sonidos
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-function getAudioCtx() {
-    if (!audioCtx) audioCtx = new AudioCtx();
-    return audioCtx;
-}
-function playSound(type) {
-    try {
-        const ctx = getAudioCtx();
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        if (type === 'correct') {
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(523, ctx.currentTime);
-            oscillator.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
-            oscillator.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
-            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-            oscillator.start(ctx.currentTime);
-            oscillator.stop(ctx.currentTime + 0.4);
-        } else if (type === 'wrong') {
-            oscillator.type = 'sawtooth';
-            oscillator.frequency.setValueAtTime(300, ctx.currentTime);
-            oscillator.frequency.setValueAtTime(200, ctx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-            oscillator.start(ctx.currentTime);
-            oscillator.stop(ctx.currentTime + 0.3);
-        } else if (type === 'complete') {
-            const notes = [523, 659, 784, 1047];
-            notes.forEach((freq, i) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
-                gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.12);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
-                osc.start(ctx.currentTime + i * 0.12);
-                osc.stop(ctx.currentTime + i * 0.12 + 0.3);
-            });
-        } else if (type === 'click') {
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-            oscillator.start(ctx.currentTime);
-            oscillator.stop(ctx.currentTime + 0.1);
+    <script>
+        // 🎵 Sonidos
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
         }
-    } catch(e) {}
-}
-window.playSound = playSound;
+        function playSound(type) {
+            try {
+                const ctx = getAudioCtx();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                if (type === 'correct') {
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523, ctx.currentTime);
+                    oscillator.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.4);
+                } else if (type === 'wrong') {
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+                    oscillator.frequency.setValueAtTime(200, ctx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.3);
+                } else if (type === 'complete') {
+                    const notes = [523, 659, 784, 1047];
+                    notes.forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+                        gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
+                        osc.start(ctx.currentTime + i * 0.12);
+                        osc.stop(ctx.currentTime + i * 0.12 + 0.3);
+                    });
+                } else if (type === 'click') {
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.1);
+                }
+            } catch(e) {}
+        }
+        window.playSound = playSound;
 
-function irA(index) {
-    playSound('click');
-    document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
-        el.style.display = i === index ? 'block' : 'none';
-    });
-    window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
-}
+        function irA(index) {
+            playSound('click');
+            document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
+                el.style.display = i === index ? 'block' : 'none';
+            });
+            window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
+        }
 
-function enviarRespuestas() {
-    playSound('complete');
-    setTimeout(() => document.getElementById('ejercicios-form').submit(), 600);
-}
+        function enviarRespuestas() {
+            playSound('complete');
+            setTimeout(() => document.getElementById('ejercicios-form').submit(), 600);
+        }
 
-// Unir con flechas
-let selectedIzq = null;
-let conexiones = {};
+        // Unir con flechas
+        let selectedIzq = null;
+        let conexiones = {};
 
-document.addEventListener('click', function(e) {
-    const izq = e.target.classList.contains('unir-izq') ? e.target : e.target.closest('.unir-izq');
-    const der = e.target.classList.contains('unir-der') ? e.target : e.target.closest('.unir-der');
+        function seleccionarIzq(el) {
+            document.querySelectorAll('[onclick="seleccionarIzq(this)"]').forEach(e => {
+                e.style.borderColor = '#93c5fd';
+                e.style.borderWidth = '2px';
+                e.style.background = '#dbeafe';
+            });
+            el.style.borderColor = '#2563eb';
+            el.style.borderWidth = '3px';
+            el.style.background = '#bfdbfe';
+            selectedIzq = el;
+            playSound('click');
+        }
 
-    if (izq) {
-        document.querySelectorAll('.unir-izq').forEach(el => {
-            el.style.borderColor = '#93c5fd';
-            el.style.borderWidth = '2px';
+        function seleccionarDer(el) {
+            if (!selectedIzq) return;
+            const exerciseId = el.dataset.exercise;
+            const izqVal = selectedIzq.dataset.value;
+            const derVal = el.dataset.value;
+            conexiones[izqVal] = derVal;
+            selectedIzq.style.background = '#dcfce7';
+            selectedIzq.style.borderColor = '#86efac';
             el.style.background = '#dbeafe';
+            el.style.borderColor = '#93c5fd';
+            const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+            const input = document.getElementById('unir-' + exerciseId);
+            if (input) input.value = pairs;
+            selectedIzq = null;
+            playSound('click');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', () => playSound('click'));
+            });
+
+            document.querySelectorAll('[id^="sortable-"]').forEach(container => {
+                const exerciseId = container.id.replace('sortable-', '');
+                new Sortable(container, {
+                    animation: 150,
+                    handle: '.sortable-item',
+                    onEnd: function() {
+                        const items = container.querySelectorAll('.sortable-item');
+                        const order = [...items].map(i => i.dataset.value);
+                        document.getElementById('order-' + exerciseId).value = order.join('|');
+                    }
+                });
+            });
         });
-        izq.style.borderColor = '#2563eb';
-        izq.style.borderWidth = '3px';
-        izq.style.background = '#bfdbfe';
-        selectedIzq = izq;
-        return;
-    }
-
-    if (der) {
-        if (!selectedIzq) return;
-        const exerciseId = der.dataset.exercise;
-        const izqVal = selectedIzq.dataset.value;
-        const derVal = der.dataset.value;
-        conexiones[izqVal] = derVal;
-        selectedIzq.style.background = '#dcfce7';
-        selectedIzq.style.borderColor = '#86efac';
-        der.style.background = '#dbeafe';
-        der.style.borderColor = '#93c5fd';
-        const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-        const input = document.getElementById('unir-' + exerciseId);
-        if (input) input.value = pairs;
-        selectedIzq = null;
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Sonidos en radio buttons
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', () => playSound('click'));
-    });
-
-    // Sortable drag & drop
-    document.querySelectorAll('[id^="sortable-"]').forEach(container => {
-        const exerciseId = container.id.replace('sortable-', '');
-        new Sortable(container, {
-            animation: 150,
-            handle: '.sortable-item',
-            onEnd: function() {
-                const items = container.querySelectorAll('.sortable-item');
-                const order = [...items].map(i => i.dataset.value);
-                document.getElementById('order-' + exerciseId).value = order.join('|');
-            }
-        });
-    });
-});
-</script>
+    </script>
 
     <!-- Botón flotante de herramientas -->
     <div id="tools-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;">
