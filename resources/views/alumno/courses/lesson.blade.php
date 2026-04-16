@@ -354,35 +354,37 @@
         window.selectedIzq = null;
 window.conexiones = {};
 
-        function seleccionarIzq(el) {
-            document.querySelectorAll('[onclick="seleccionarIzq(this)"]').forEach(e => {
-                e.style.borderColor = '#93c5fd';
-                e.style.borderWidth = '2px';
-                e.style.background = '#dbeafe';
-            });
-            el.style.borderColor = '#2563eb';
-            el.style.borderWidth = '3px';
-            el.style.background = '#bfdbfe';
-window.selectedIzq = el;
-            playSound('click');
-        }
+function seleccionarIzq(el) {
+    document.querySelectorAll('[onclick="seleccionarIzq(this)"]').forEach(e => {
+        e.style.borderColor = '#93c5fd';
+        e.style.borderWidth = '2px';
+        e.style.background = '#dbeafe';
+    });
+    el.style.borderColor = '#2563eb';
+    el.style.borderWidth = '3px';
+    el.style.background = '#bfdbfe';
+    window.selectedIzq = el;
+    playSound('click');
+}
 
         function seleccionarDer(el) {
-            if (!window.selectedIzq) return;
-            const exerciseId = el.dataset.exercise;
-            const izqVal = selectedIzq.dataset.value;
-            const derVal = el.dataset.value;
-            conexiones[izqVal] = derVal;
-            selectedIzq.style.background = '#dcfce7';
-            selectedIzq.style.borderColor = '#86efac';
-            el.style.background = '#dbeafe';
-            el.style.borderColor = '#93c5fd';
-            const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-            const input = document.getElementById('unir-' + exerciseId);
-            if (input) input.value = pairs;
-            window.selectedIzq = null;
-            playSound('click');
-        }
+    if (!window.selectedIzq) return;
+    const exerciseId = el.dataset.exercise;
+    const izqVal = window.selectedIzq.dataset.value;
+    const derVal = el.dataset.value;
+    window.conexiones[izqVal] = derVal;
+    window.selectedIzq.style.background = '#dcfce7';
+    window.selectedIzq.style.borderColor = '#86efac';
+    el.style.background = '#dbeafe';
+    el.style.borderColor = '#93c5fd';
+    const pairs = Object.entries(window.conexiones).map(([k, v]) => k + '|' + v).join(',');
+    const input = document.getElementById('unir-' + exerciseId);
+    if (input) input.value = pairs;
+    window.selectedIzq = null;
+    playSound('click');
+    // Forzar re-render visual
+    el.offsetHeight;
+}
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('input[type="radio"]').forEach(radio => {
