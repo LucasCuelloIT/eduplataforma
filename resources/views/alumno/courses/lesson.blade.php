@@ -276,16 +276,14 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-    <script>
-// 🎵 Sistema de sonidos con Web Audio API
+<script>
+// 🎵 Sonidos
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
-
 function getAudioCtx() {
     if (!audioCtx) audioCtx = new AudioCtx();
     return audioCtx;
 }
-
 function playSound(type) {
     try {
         const ctx = getAudioCtx();
@@ -293,9 +291,7 @@ function playSound(type) {
         const gainNode = ctx.createGain();
         oscillator.connect(gainNode);
         gainNode.connect(ctx.destination);
-
         if (type === 'correct') {
-            // Sonido alegre - dos notas ascendentes
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(523, ctx.currentTime);
             oscillator.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
@@ -305,7 +301,6 @@ function playSound(type) {
             oscillator.start(ctx.currentTime);
             oscillator.stop(ctx.currentTime + 0.4);
         } else if (type === 'wrong') {
-            // Sonido suave de error
             oscillator.type = 'sawtooth';
             oscillator.frequency.setValueAtTime(300, ctx.currentTime);
             oscillator.frequency.setValueAtTime(200, ctx.currentTime + 0.1);
@@ -314,7 +309,6 @@ function playSound(type) {
             oscillator.start(ctx.currentTime);
             oscillator.stop(ctx.currentTime + 0.3);
         } else if (type === 'complete') {
-            // Fanfarria al completar
             const notes = [523, 659, 784, 1047];
             notes.forEach((freq, i) => {
                 const osc = ctx.createOscillator();
@@ -336,101 +330,81 @@ function playSound(type) {
             oscillator.start(ctx.currentTime);
             oscillator.stop(ctx.currentTime + 0.1);
         }
-    } catch(e) {
-        // Silenciar errores de audio
-    }
+    } catch(e) {}
+}
+window.playSound = playSound;
+
+function irA(index) {
+    playSound('click');
+    document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
+        el.style.display = i === index ? 'block' : 'none';
+    });
+    window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
 }
 
-// Reproducir sonido al seleccionar opción
+function enviarRespuestas() {
+    playSound('complete');
+    setTimeout(() => document.getElementById('ejercicios-form').submit(), 600);
+}
+
+// Unir con flechas
+let selectedIzq = null;
+let conexiones = {};
+
+document.addEventListener('click', function(e) {
+    const izq = e.target.closest('.unir-izq');
+    const der = e.target.closest('.unir-der');
+
+    if (izq) {
+        document.querySelectorAll('.unir-izq').forEach(el => {
+            el.style.borderColor = '#93c5fd';
+            el.style.borderWidth = '2px';
+            el.style.background = '#dbeafe';
+        });
+        izq.style.borderColor = '#2563eb';
+        izq.style.borderWidth = '3px';
+        izq.style.background = '#bfdbfe';
+        selectedIzq = izq;
+        return;
+    }
+
+    if (der) {
+        if (!selectedIzq) return;
+        const exerciseId = der.dataset.exercise;
+        const izqVal = selectedIzq.dataset.value;
+        const derVal = der.dataset.value;
+        conexiones[izqVal] = derVal;
+        selectedIzq.style.background = '#dcfce7';
+        selectedIzq.style.borderColor = '#86efac';
+        der.style.background = '#dbeafe';
+        der.style.borderColor = '#93c5fd';
+        const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+        const input = document.getElementById('unir-' + exerciseId);
+        if (input) input.value = pairs;
+        selectedIzq = null;
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Sonido al hacer click en radio buttons
+    // Sonidos en radio buttons
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
         radio.addEventListener('change', () => playSound('click'));
     });
 
-    // Sonido al navegar entre ejercicios
-    document.querySelectorAll('button[onclick^="irA"]').forEach(btn => {
-        btn.addEventListener('click', () => playSound('click'));
+    // Sortable drag & drop
+    document.querySelectorAll('[id^="sortable-"]').forEach(container => {
+        const exerciseId = container.id.replace('sortable-', '');
+        new Sortable(container, {
+            animation: 150,
+            handle: '.sortable-item',
+            onEnd: function() {
+                const items = container.querySelectorAll('.sortable-item');
+                const order = [...items].map(i => i.dataset.value);
+                document.getElementById('order-' + exerciseId).value = order.join('|');
+            }
+        });
     });
 });
-
-// Exponer playSound globalmente
-window.playSound = playSound;
-function enviarRespuestas() {
-    playSound('complete');
-    setTimeout(() => {
-        document.getElementById('ejercicios-form').submit();
-    }, 600);
-}
-</script>
-    <script>
-    function irA(index) {
-        playSound('click');
-        document.querySelectorAll('.ejercicio-card').forEach((el, i) => {
-            el.style.display = i === index ? 'block' : 'none';
-        });
-        window.scrollTo({ top: document.getElementById('ejercicios-form').offsetTop - 100, behavior: 'smooth' });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        // Drag & Drop con Sortable.js
-        document.querySelectorAll('[id^="sortable-"]').forEach(container => {
-            const exerciseId = container.id.replace('sortable-', '');
-            new Sortable(container, {
-                animation: 150,
-                handle: '.sortable-item',
-                onEnd: function() {
-                    const items = container.querySelectorAll('.sortable-item');
-                    const order = [...items].map(i => i.dataset.value);
-                    document.getElementById('order-' + exerciseId).value = order.join('|');
-                }
-            });
-        });
-    });
-
-    // Unir con flechas - fuera del DOMContentLoaded para evitar conflictos
-    let selectedIzq = null;
-    let conexiones = {};
-
-    document.addEventListener('click', function(e) {
-        const izq = e.target.closest('.unir-izq');
-        const der = e.target.closest('.unir-der');
-
-console.log('click en:', e.target, 'izq:', izq, 'der:', der, 'selectedIzq:', selectedIzq);
-        if (izq) {
-            document.querySelectorAll('.unir-izq').forEach(el => {
-                el.style.borderColor = '#93c5fd';
-                el.style.borderWidth = '2px';
-                el.style.background = '#dbeafe';
-            });
-            izq.style.borderColor = '#2563eb';
-            izq.style.borderWidth = '3px';
-            izq.style.background = '#bfdbfe';
-            selectedIzq = izq;
-            return;
-        }
-
-        if (der) {
-    if (!selectedIzq) {
-        // Si no hay izquierda seleccionada, ignorar click en derecha
-        return;
-    }
-    const exerciseId = der.dataset.exercise;
-    const izqVal = selectedIzq.dataset.value;
-    const derVal = der.dataset.value;
-
-    conexiones[izqVal] = derVal;
-    selectedIzq.style.background = '#dcfce7';
-    selectedIzq.style.borderColor = '#86efac';
-    der.style.background = '#dbeafe';
-    der.style.borderColor = '#93c5fd';
-
-    const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-    const input = document.getElementById('unir-' + exerciseId);
-    if (input) input.value = pairs;
-    selectedIzq = null;
-}
-    });
 </script>
 
     <!-- Botón flotante de herramientas -->
