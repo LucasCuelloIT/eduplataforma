@@ -351,8 +351,8 @@
         }
 
         // Unir con flechas
-        let selectedIzq = null;
-        let conexiones = {};
+        window.selectedIzq = null;
+window.conexiones = {};
 
         function seleccionarIzq(el) {
             document.querySelectorAll('[onclick="seleccionarIzq(this)"]').forEach(e => {
@@ -363,12 +363,12 @@
             el.style.borderColor = '#2563eb';
             el.style.borderWidth = '3px';
             el.style.background = '#bfdbfe';
-            selectedIzq = el;
+window.selectedIzq = el;
             playSound('click');
         }
 
         function seleccionarDer(el) {
-            if (!selectedIzq) return;
+            if (!window.selectedIzq) return;
             const exerciseId = el.dataset.exercise;
             const izqVal = selectedIzq.dataset.value;
             const derVal = el.dataset.value;
@@ -380,7 +380,7 @@
             const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
             const input = document.getElementById('unir-' + exerciseId);
             if (input) input.value = pairs;
-            selectedIzq = null;
+            window.selectedIzq = null;
             playSound('click');
         }
 
