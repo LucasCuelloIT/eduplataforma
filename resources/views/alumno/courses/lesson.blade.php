@@ -396,6 +396,7 @@ function enviarRespuestas() {
         const izq = e.target.closest('.unir-izq');
         const der = e.target.closest('.unir-der');
 
+console.log('click en:', e.target, 'izq:', izq, 'der:', der, 'selectedIzq:', selectedIzq);
         if (izq) {
             document.querySelectorAll('.unir-izq').forEach(el => {
                 el.style.borderColor = '#93c5fd';
@@ -409,22 +410,26 @@ function enviarRespuestas() {
             return;
         }
 
-        if (der && selectedIzq) {
-            const exerciseId = der.dataset.exercise;
-            const izqVal = selectedIzq.dataset.value;
-            const derVal = der.dataset.value;
+        if (der) {
+    if (!selectedIzq) {
+        // Si no hay izquierda seleccionada, ignorar click en derecha
+        return;
+    }
+    const exerciseId = der.dataset.exercise;
+    const izqVal = selectedIzq.dataset.value;
+    const derVal = der.dataset.value;
 
-            conexiones[izqVal] = derVal;
-            selectedIzq.style.background = '#dcfce7';
-            selectedIzq.style.borderColor = '#86efac';
-            der.style.background = '#dbeafe';
-            der.style.borderColor = '#93c5fd';
+    conexiones[izqVal] = derVal;
+    selectedIzq.style.background = '#dcfce7';
+    selectedIzq.style.borderColor = '#86efac';
+    der.style.background = '#dbeafe';
+    der.style.borderColor = '#93c5fd';
 
-            const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
-            const input = document.getElementById('unir-' + exerciseId);
-            if (input) input.value = pairs;
-            selectedIzq = null;
-        }
+    const pairs = Object.entries(conexiones).map(([k, v]) => k + '|' + v).join(',');
+    const input = document.getElementById('unir-' + exerciseId);
+    if (input) input.value = pairs;
+    selectedIzq = null;
+}
     });
 </script>
 
