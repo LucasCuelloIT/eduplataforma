@@ -167,36 +167,48 @@
                                         <input type="hidden" name="exercise_{{ $exercise->id }}" id="order-{{ $exercise->id }}" value="">
 
                                     @elseif($exercise->tipo === 'unir')
-                                        @php
-                                            $pares = $exercise->options->map(fn($o) => explode('|', $o->texto));
-                                            $izquierda = $pares->pluck(0)->shuffle();
-                                            $derecha = $pares->pluck(1)->shuffle();
-                                        @endphp
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Hacé clic en un elemento de la izquierda y luego en el de la derecha para unirlos.</p>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                                @foreach($izquierda as $item)
-                                                    <div onclick="seleccionarIzq(this)"
-                                                        data-exercise="{{ $exercise->id }}"
-                                                        data-value="{{ $item }}"
-                                                        style="background: #dbeafe; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #1d4ed8; text-align: center; user-select: none;">
-                                                        {{ $item }}
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                                @foreach($derecha as $item)
-                                                    <div onclick="seleccionarDer(this)"
-                                                        data-exercise="{{ $exercise->id }}"
-                                                        data-value="{{ $item }}"
-                                                        style="background: #dcfce7; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #15803d; text-align: center; user-select: none;">
-                                                        {{ $item }}
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                        <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-{{ $exercise->id }}" value="">
-
+    @php
+        $pares = $exercise->options->map(fn($o) => explode('|', $o->texto));
+        $izquierda = $pares->pluck(0)->values();
+        $derecha = $pares->pluck(1)->shuffle()->values();
+    @endphp
+    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Para cada elemento de la izquierda, seleccioná su par correcto de la derecha.</p>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        @foreach($izquierda as $i => $itemIzq)
+            <div style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px;">
+                <p style="font-weight: 700; color: #1d4ed8; margin-bottom: 8px;">{{ $itemIzq }}</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    @foreach($derecha as $itemDer)
+                        <label style="display: flex; align-items: center; gap: 6px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; color: #374151; font-size: 0.9rem;">
+                            <input type="radio"
+                                name="unir_{{ $exercise->id }}_{{ $i }}"
+                                value="{{ $itemIzq }}|{{ $itemDer }}"
+                                style="accent-color: #8b5cf6; width: 16px; height: 16px;">
+                            {{ $itemDer }}
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        @endforeach
+    </div>
+    <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-{{ $exercise->id }}" value="">
+    <script>
+        document.querySelectorAll('input[name^="unir_{{ $exercise->id }}_"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const exerciseId = '{{ $exercise->id }}';
+                const allRadios = document.querySelectorAll(`input[name^="unir_${exerciseId}_"]`);
+                const selected = {};
+                allRadios.forEach(r => {
+                    if (r.checked) {
+                        const parts = r.value.split('|');
+                        selected[parts[0]] = parts[1];
+                    }
+                });
+                const pairs = Object.entries(selected).map(([k, v]) => k + '|' + v).join(',');
+                document.getElementById('unir-' + exerciseId).value = pairs;
+            });
+        });
+    </script>
                                     @elseif($exercise->tipo === 'tabla')
                                         @php
                                             $tablaData = json_decode($exercise->options->first()?->texto, true);
