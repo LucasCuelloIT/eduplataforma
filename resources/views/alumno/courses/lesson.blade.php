@@ -166,49 +166,30 @@
                                         </div>
                                         <input type="hidden" name="exercise_{{ $exercise->id }}" id="order-{{ $exercise->id }}" value="">
 
-                                    @elseif($exercise->tipo === 'unir')
+                                   @elseif($exercise->tipo === 'unir')
     @php
         $pares = $exercise->options->map(fn($o) => explode('|', $o->texto));
         $izquierda = $pares->pluck(0)->values();
         $derecha = $pares->pluck(1)->shuffle()->values();
     @endphp
-    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Para cada elemento de la izquierda, seleccioná su par correcto de la derecha.</p>
-    <div style="display: flex; flex-direction: column; gap: 12px;">
+    <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 12px;">Para cada elemento de la izquierda, elegí su par correcto.</p>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
         @foreach($izquierda as $i => $itemIzq)
-            <div style="background: #f8faff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px;">
-                <p style="font-weight: 700; color: #1d4ed8; margin-bottom: 8px;">{{ $itemIzq }}</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 12px; background: #f8faff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 12px 16px;">
+                <span style="background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 700; min-width: 120px; text-align: center;">{{ $itemIzq }}</span>
+                <span style="color: #9ca3af; font-size: 1.2rem;">→</span>
+                <select name="unir_{{ $exercise->id }}_{{ $i }}"
+                    onchange="actualizarUnir({{ $exercise->id }})"
+                    style="flex: 1; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 0.95rem; font-weight: 600; color: #374151; cursor: pointer;">
+                    <option value="">Elegí una opción...</option>
                     @foreach($derecha as $itemDer)
-                        <label style="display: flex; align-items: center; gap: 6px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; color: #374151; font-size: 0.9rem;">
-                            <input type="radio"
-                                name="unir_{{ $exercise->id }}_{{ $i }}"
-                                value="{{ $itemIzq }}|{{ $itemDer }}"
-                                style="accent-color: #8b5cf6; width: 16px; height: 16px;">
-                            {{ $itemDer }}
-                        </label>
+                        <option value="{{ $itemIzq }}|{{ $itemDer }}">{{ $itemDer }}</option>
                     @endforeach
-                </div>
+                </select>
             </div>
         @endforeach
     </div>
-    <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-{{ $exercise->id }}" value="">
-    <script>
-        document.querySelectorAll('input[name^="unir_{{ $exercise->id }}_"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const exerciseId = '{{ $exercise->id }}';
-                const allRadios = document.querySelectorAll(`input[name^="unir_${exerciseId}_"]`);
-                const selected = {};
-                allRadios.forEach(r => {
-                    if (r.checked) {
-                        const parts = r.value.split('|');
-                        selected[parts[0]] = parts[1];
-                    }
-                });
-                const pairs = Object.entries(selected).map(([k, v]) => k + '|' + v).join(',');
-                document.getElementById('unir-' + exerciseId).value = pairs;
-            });
-        });
-    </script>
+    <input type="hidden" name="exercise_{{ $exercise->id }}" id="unir-result-{{ $exercise->id }}" value="">
                                     @elseif($exercise->tipo === 'tabla')
                                         @php
                                             $tablaData = json_decode($exercise->options->first()?->texto, true);
