@@ -500,7 +500,15 @@ function seleccionarIzq(el) {
             msg.style.display = 'block';
             setTimeout(() => msg.style.display = 'none', 2000);
         }
-
+        function actualizarUnir(exerciseId) {
+    const selects = document.querySelectorAll('select[name^="unir_' + exerciseId + '_"]');
+    const pairs = [];
+    selects.forEach(function(select) {
+        if (select.value) pairs.push(select.value);
+    });
+    const input = document.getElementById('unir-result-' + exerciseId);
+    if (input) input.value = pairs.join(',');
+}
         mostrarTabla();
     </script>
 </x-app-layout>
